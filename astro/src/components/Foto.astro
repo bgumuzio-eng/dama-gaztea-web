@@ -9,8 +9,18 @@ interface Props {
   prioridad?: boolean;
   ancho?: number;
   pie?: boolean;
+  textoPie?: string;
 }
-const { imagen, proporcion, class: clase, posicion = 'center', prioridad = false, ancho = 1600, pie = true } = Astro.props;
+const {
+  imagen,
+  proporcion,
+  class: clase,
+  posicion = 'center',
+  prioridad = false,
+  ancho = 1600,
+  pie = true,
+  textoPie = 'Foto provisional',
+} = Astro.props;
 const src = imagen.src ?? '/img/provisionales/piezas-madera-desenfoque.jpg';
 const provisional = src.includes('/img/provisionales/');
 const estilo = [proporcion && `aspect-ratio:${proporcion}`, `object-position:${posicion}`].filter(Boolean).join(';');
@@ -27,7 +37,7 @@ const estilo = [proporcion && `aspect-ratio:${proporcion}`, `object-position:${p
     decoding="async"
     fetchpriority={prioridad ? 'high' : 'auto'}
   />
-  {pie && provisional && <figcaption class="foto__provisional">Foto provisional</figcaption>}
+  {pie && provisional && <figcaption class="foto__provisional">{textoPie}</figcaption>}
 </figure>
 
 <style>

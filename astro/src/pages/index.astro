@@ -255,6 +255,7 @@ const porConfirmar = new Set(['Alumnos campeones de España', 'Simultáneas con 
         posicion="50% 30%"
         ancho={1000}
         class="profesor__foto"
+        textoPie="Retrato provisional, se sustituirá por el de Álex"
       />
       <div class="profesor__texto">
         <div class="titulo-seccion">
@@ -296,12 +297,12 @@ const porConfirmar = new Set(['Alumnos campeones de España', 'Simultáneas con 
       <div class="aprende">
         {
           problema && (
-            <div class="semana">
-              <div class="semana__tablero">
+            <article class="aprende__tarjeta semana">
+              <div class="aprende__media semana__tablero">
                 <TableroFEN fen={problema.data.posicionFEN} etiqueta={`Posición del problema de la semana: ${problema.data.enunciado}`} />
               </div>
-              <div class="semana__texto">
-                <p class="antetitulo">Problema de la semana</p>
+              <div>
+                <p class="etiqueta">Problema de la semana</p>
                 <h3>{problema.data.enunciado}</h3>
                 <p class="texto-suave">
                   Semana del {fechaLarga(problema.data.destacadoSemana!)}. Resuélvelo moviendo las piezas y sigue con más problemas por
@@ -311,11 +312,16 @@ const porConfirmar = new Set(['Alumnos campeones de España', 'Simultáneas con 
                   Resolver en el tablero
                 </a>
               </div>
-            </div>
+            </article>
           )
         }
-        <article class="campus">
-          <Foto imagen={{ src: '/img/provisionales/partida-al-aire-libre.jpg', alt: 'Niños jugando al ajedrez al aire libre en verano' }} proporcion="3 / 2" ancho={900} class="campus__foto" />
+        <article class="aprende__tarjeta campus">
+          <Foto
+            imagen={{ src: '/img/provisionales/partida-al-aire-libre.jpg', alt: 'Niños jugando al ajedrez al aire libre en verano' }}
+            proporcion="1 / 1"
+            ancho={900}
+            class="aprende__media campus__foto"
+          />
           <p class="etiqueta">Campus</p>
           <h3>Campus de verano y de Carnaval</h3>
           <p class="texto-suave">Ajedrez cada mañana combinado con deporte, piscina, juegos y excursiones. Transporte y comida incluidos en verano.</p>
@@ -411,6 +417,25 @@ const porConfirmar = new Set(['Alumnos campeones de España', 'Simultáneas con 
     background:
       linear-gradient(to top, rgb(20 83 45 / 0.92) 0%, rgb(20 83 45 / 0.6) 38%, rgb(20 83 45 / 0.12) 72%, rgb(20 83 45 / 0.25) 100%),
       linear-gradient(to right, rgb(20 83 45 / 0.55) 0%, transparent 55%);
+  }
+  /* En móvil la etiqueta cae sobre las piezas: franja semitransparente y degradado más alto */
+  @media (max-width: 959px) {
+    .hero__velo {
+      background: linear-gradient(
+        to top,
+        rgb(20 83 45 / 0.96) 0%,
+        rgb(20 83 45 / 0.82) 45%,
+        rgb(20 83 45 / 0.35) 75%,
+        rgb(20 83 45 / 0.2) 100%
+      );
+    }
+    .hero .antetitulo {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 4px;
+      background: rgb(17 63 37 / 0.82);
+      line-height: 1.3;
+    }
   }
   .hero__provisional {
     position: absolute;
@@ -788,39 +813,45 @@ const porConfirmar = new Set(['Alumnos campeones de España', 'Simultáneas con 
   }
 
   /* 06 Aprende */
+  /* Dos columnas iguales con la imagen cuadrada arriba: tablero y foto miden lo mismo */
   .aprende {
     display: grid;
-    gap: 48px;
+    gap: 56px;
   }
-  @media (min-width: 960px) {
+  @media (min-width: 760px) {
     .aprende {
-      grid-template-columns: 1.5fr 1fr;
-      gap: 64px;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
     }
   }
-  .semana {
-    display: grid;
-    gap: 32px;
-    align-items: center;
-  }
-  @media (min-width: 640px) {
-    .semana {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  @media (min-width: 1100px) {
+    .aprende {
+      gap: 80px;
     }
+  }
+  .aprende__tarjeta {
+    display: flex;
+    flex-direction: column;
+  }
+  .aprende__tarjeta > div:last-child,
+  .aprende__tarjeta .texto-suave {
+    flex: 1;
+  }
+  .aprende :global(.aprende__media) {
+    margin-bottom: 28px;
+    border-radius: var(--radio-foto);
   }
   .semana__tablero {
     padding: 6px;
-    max-width: 420px;
   }
-  .semana h3 {
+  .aprende h3 {
     font-size: clamp(1.4rem, 1.2rem + 0.8vw, 1.75rem);
   }
-  .campus :global(.campus__foto) {
-    border-radius: var(--radio-foto);
-    margin-bottom: 20px;
-  }
-  .campus .etiqueta {
+  .aprende .etiqueta {
     margin: 0 0 8px;
+  }
+  .semana .boton {
+    margin-top: 4px;
   }
 
   /* 07 Contacto */

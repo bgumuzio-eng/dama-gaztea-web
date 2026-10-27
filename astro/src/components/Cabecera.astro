@@ -90,6 +90,16 @@ const tipografias = [
   menuBoton.addEventListener('click', () => alternar(menuBoton.getAttribute('aria-expanded') !== 'true'));
   nav.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => alternar(false)));
   document.addEventListener('keydown', (e) => e.key === 'Escape' && alternar(false));
+
+  // Al bajar, la cabecera se compacta a 56 px
+  const cabecera = document.querySelector<HTMLElement>('.cabecera')!;
+  let compacta = false;
+  const revisar = () => {
+    const debe = window.scrollY > 80;
+    if (debe !== compacta) cabecera.classList.toggle('cabecera--compacta', (compacta = debe));
+  };
+  window.addEventListener('scroll', revisar, { passive: true });
+  revisar();
 </script>
 
 <style>
@@ -179,6 +189,30 @@ const tipografias = [
     justify-content: space-between;
     gap: 16px;
     min-height: 72px;
+    transition: min-height var(--transicion);
+  }
+  .cabecera--compacta {
+    box-shadow: 0 4px 16px rgb(0 0 0 / 0.12);
+  }
+  .cabecera--compacta .cabecera__fila {
+    min-height: 56px;
+  }
+  .cabecera :global(.logo__monograma),
+  .cabecera :global(.logo__nombre),
+  .cabecera :global(.logo__sub) {
+    transition: all var(--transicion);
+  }
+  .cabecera--compacta :global(.logo__monograma) {
+    width: 36px;
+    height: 36px;
+    font-size: 15px;
+  }
+  .cabecera--compacta :global(.logo__nombre) {
+    font-size: 13px;
+  }
+  .cabecera--compacta :global(.logo__sub) {
+    margin-top: 3px;
+    font-size: 10px;
   }
   .cabecera__menu-boton {
     display: grid;

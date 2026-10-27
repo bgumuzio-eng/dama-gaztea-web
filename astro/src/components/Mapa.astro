@@ -1,5 +1,6 @@
 ---
-// Mapa esquemático de la ría con marcadores dorados sobre crema. No carga nada externo ni cookies.
+// Mapa compacto: la costa y la ría en una sola línea, con cada centro marcado y etiquetado.
+// Es un SVG propio: no carga nada externo ni pone cookies.
 import type { CollectionEntry } from 'astro:content';
 interface Props {
   centros: CollectionEntry<'centros'>[];
@@ -7,50 +8,50 @@ interface Props {
 }
 const { centros, destacado } = Astro.props;
 
-const caja = { oeste: -3.075, este: -2.895, norte: 43.372, sur: 43.242 };
+const caja = { oeste: -3.075, este: -2.895, norte: 43.372, sur: 43.248 };
 const ancho = 480;
-const alto = 360;
+const alto = 290;
 const x = (lng: number) => ((lng - caja.oeste) / (caja.este - caja.oeste)) * ancho;
 const y = (lat: number) => ((caja.norte - lat) / (caja.norte - caja.sur)) * alto;
-const p = (lat: number, lng: number) => `${x(lng).toFixed(1)},${y(lat).toFixed(1)}`;
+const linea = (puntos: number[][]) => puntos.map(([la, ln]) => `${x(ln).toFixed(1)},${y(la).toFixed(1)}`).join(' ');
 
-// Costa y ría del Nervión, trazado aproximado
-const mar = `M0,0 L${ancho},0 L${ancho},${y(43.366).toFixed(1)} C${x(-2.97)},${y(43.37)} ${x(-2.995)},${y(43.36)} ${x(-3.005)},${y(43.345)} L${x(-3.025)},${y(43.333)} C${x(-3.045)},${y(43.336)} ${x(-3.065)},${y(43.342)} 0,${y(43.346)} Z`;
-const ria = [
-  [43.338, -3.02], [43.325, -3.014], [43.313, -3.004], [43.302, -2.99], [43.29, -2.975], [43.28, -2.96],
-  [43.269, -2.946], [43.262, -2.93], [43.255, -2.912],
-].map(([la, ln]) => p(la, ln)).join(' ');
+// Costa desde el este hasta la boca de la ría y, sin cortar, ría arriba hasta Bilbao (trazado aproximado)
+const costaYRia = linea([
+  [43.371, -2.895], [43.368, -2.955], [43.36, -2.99], [43.346, -3.01], [43.336, -3.026],
+  [43.324, -3.023], [43.31, -2.997], [43.297, -2.98], [43.281, -2.96],
+  [43.269, -2.945], [43.262, -2.928], [43.257, -2.912],
+]);
+const costaOeste = linea([[43.336, -3.026], [43.338, -3.045], [43.345, -3.075]]);
 
-// Una etiqueta por localidad, junto a su primer centro
-const etiquetas = [...new Map(centros.map((c) => [c.data.localidad, c])).values()];
+// Etiqueta de cada centro: a la izquierda o a la derecha del punto según quepa
+const lado: Record<string, 'izq' | 'der'> = { 'getxo-las-arenas': 'izq', 'sestao-bar-palas': 'izq', 'bilbao-anakids': 'izq' };
 ---
 
 <figure class="mapa">
   <svg viewBox={`0 0 ${ancho} ${alto}`} role="img" aria-labelledby="mapa-titulo">
-    <title id="mapa-titulo">Mapa esquemático de los centros de Dama Gaztea en la ría de Bilbao</title>
-    <rect width={ancho} height={alto} fill="#F7F4EC"></rect>
-    <path d={mar} fill="#ECE5D3"></path>
-    <polyline points={ria} fill="none" stroke="#ECE5D3" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></polyline>
-    <text x="28" y="40" class="mapa__mar">Mar Cantábrico</text>
-    <text x={x(-2.985)} y={y(43.297)} class="mapa__ria" transform={`rotate(38 ${x(-2.985)} ${y(43.297)})`}>Ría de Bilbao</text>
-    {
-      etiquetas.map((c) => {
-        const izquierda = c.data.localidad !== 'Bilbao';
-        const cx = x(c.data.ubicacion.lng);
-        const cy = y(c.data.ubicacion.lat);
-        return (
-          <text x={izquierda ? cx - 20 : cx + 20} y={cy + 5} text-anchor={izquierda ? 'end' : 'start'} class="mapa__nombre">
-            {c.data.localidad}
-          </text>
-        );
-      })
-    }
+    <title id="mapa-titulo">Mapa de los centros de Dama Gaztea en la ría de Bilbao</title>
+    <polyline points={costaOeste} class="mapa__costa"></polyline>
+    <polyline points={costaYRia} class="mapa__costa"></polyline>
+    <text x="24" y="34" class="mapa__mar">Mar Cantábrico</text>
     {
       centros.map((c) => {
-        const activo = c.id === destacado;
+        const cx = x(c.data.ubicacion.lng);
+        const cy = y(c.data.ubicacion.lat);
+        const izq = lado[c.id] === 'izq';
+        // Bilbao queda pegado a la ría: su etiqueta va debajo del punto
+        const abajo = c.data.localidad === 'Bilbao';
+        const tx = abajo ? cx + 8 : izq ? cx - 16 : cx + 16;
+        const ancla = izq ? 'end' : 'start';
+        const ty = abajo ? cy + 18 : cy;
         return (
-          <a href={`/centros/${c.id}/`} class="mapa__punto" aria-label={`${c.data.nombre}, ${c.data.localidad}`}>
-            <circle cx={x(c.data.ubicacion.lng)} cy={y(c.data.ubicacion.lat)} r={activo ? 10 : 8} class:list={['mapa__marca', { activo }]} />
+          <a href={`/centros/${c.id}/`} class:list={['mapa__punto', { activo: c.id === destacado }]}>
+            <circle cx={cx} cy={cy} r="7" class="mapa__marca" />
+            <text x={tx} y={ty - 4} text-anchor={ancla} class="mapa__localidad">
+              {c.data.localidad}
+            </text>
+            <text x={tx} y={ty + 15} text-anchor={ancla} class="mapa__nombre">
+              {c.data.nombre}
+            </text>
           </a>
         );
       })
@@ -61,41 +62,52 @@ const etiquetas = [...new Map(centros.map((c) => [c.data.localidad, c])).values(
 <style>
   .mapa {
     margin: 0;
+    padding: 12px;
     border-radius: var(--radio-foto);
-    overflow: hidden;
+    background: var(--color-white);
     border: 1px solid var(--color-borde);
   }
   svg {
     display: block;
     width: 100%;
     height: auto;
+    overflow: visible;
   }
-  .mapa__mar,
-  .mapa__ria {
-    font: italic 14px 'Fraunces Variable', Georgia, serif;
+  .mapa__costa {
+    fill: none;
+    stroke: #14532d;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.55;
+  }
+  .mapa__mar {
+    font: italic 13px 'Fraunces Variable', Georgia, serif;
     fill: #8a7f66;
   }
-  .mapa__ria {
-    font-size: 12px;
+  .mapa__localidad {
+    font: 600 12px 'Inter Variable', system-ui, sans-serif;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    fill: #8a6d1c;
   }
   .mapa__nombre {
-    font: 600 15px 'Inter Variable', system-ui, sans-serif;
-    letter-spacing: 0.02em;
+    font: 600 17px 'Inter Variable', system-ui, sans-serif;
     fill: #14532d;
   }
   .mapa__marca {
     fill: #d4af37;
     stroke: #ffffff;
     stroke-width: 3;
-    transition: r 200ms ease, fill 200ms ease;
-  }
-  .mapa__marca.activo {
-    fill: #14532d;
-    stroke: #d4af37;
+    transition: fill 200ms ease;
   }
   .mapa__punto:hover .mapa__marca,
-  .mapa__punto:focus-visible .mapa__marca {
+  .mapa__punto:focus-visible .mapa__marca,
+  .mapa__punto.activo .mapa__marca {
     fill: #14532d;
     stroke: #d4af37;
+  }
+  .mapa__punto:hover .mapa__nombre {
+    text-decoration: underline;
   }
 </style>
