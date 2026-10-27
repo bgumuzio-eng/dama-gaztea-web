@@ -1,0 +1,126 @@
+---
+import { getCollection } from 'astro:content';
+import Logo from './Logo.astro';
+import ajustes from '../data/ajustes.json';
+import { enlaceWhatsApp } from '../lib/formato';
+
+const centros = (await getCollection('centros', ({ data }) => data.activo)).sort((a, b) => a.data.orden - b.data.orden);
+const anio = new Date().getFullYear();
+---
+
+<footer class="pie">
+  <div class="pie__cierre">
+    <div class="contenedor">
+      <p>{ajustes.fraseCierre}</p>
+    </div>
+  </div>
+  <div class="contenedor pie__rejilla">
+    <div>
+      <Logo eslogan />
+    </div>
+    <div>
+      <h2 class="pie__titulo">Centros</h2>
+      <ul>
+        {
+          centros.map((c) => (
+            <li>
+              <a href={`/centros/${c.id}/`}>{c.data.localidad}: {c.data.nombre}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+    <div>
+      <h2 class="pie__titulo">Contacto</h2>
+      <ul>
+        <li><a href={`tel:+34${ajustes.telefono.replace(/\s/g, '')}`}>{ajustes.telefono}</a></li>
+        <li><a href={enlaceWhatsApp()}>WhatsApp</a></li>
+        <li><a href={`mailto:${ajustes.email}`}>{ajustes.email}</a></li>
+      </ul>
+    </div>
+    <div>
+      <h2 class="pie__titulo">Síguenos</h2>
+      <ul>
+        <li><a href={ajustes.redes.instagram} rel="noopener">Instagram</a></li>
+        <li><a href={ajustes.redes.tiktok} rel="noopener">TikTok</a></li>
+        <li><a href={ajustes.redes.youtube} rel="noopener">YouTube</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="contenedor pie__legal">
+    <span>© {anio} {ajustes.nombreAcademia}</span>
+    <a href="#">Aviso legal</a>
+    <a href="#">Privacidad</a>
+    <a href="#">Cookies</a>
+    <a href="#">Imagen de menores</a>
+    <a href="#">Panel</a>
+  </div>
+</footer>
+
+<style>
+  .pie {
+    background: var(--color-primary) var(--patron-tablero-claro);
+    color: var(--color-muted);
+    padding-bottom: 88px;
+  }
+  .pie__cierre {
+    border-bottom: 1px solid rgb(255 255 255 / 0.12);
+    text-align: center;
+  }
+  .pie__cierre p {
+    margin: 0;
+    padding: 36px 0;
+    font-family: var(--font-titulo);
+    font-style: italic;
+    font-size: clamp(1.4rem, 1.1rem + 1.4vw, 2rem);
+    color: var(--color-white);
+  }
+  .pie__cierre p::after {
+    content: '';
+    display: block;
+    width: 56px;
+    height: 3px;
+    margin: 14px auto 0;
+    background: var(--color-gold);
+    border-radius: 2px;
+  }
+  .pie__rejilla {
+    display: grid;
+    gap: 32px;
+    padding-block: 48px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+  .pie__titulo {
+    font-family: var(--font-texto);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-gold);
+    margin-bottom: 12px;
+  }
+  .pie ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .pie li {
+    margin-bottom: 8px;
+  }
+  .pie a {
+    color: var(--color-muted);
+    text-decoration: none;
+  }
+  .pie a:hover {
+    color: var(--color-white);
+    text-decoration: underline;
+  }
+  .pie__legal {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    padding-block: 20px;
+    border-top: 1px solid rgb(255 255 255 / 0.12);
+    font-size: 14px;
+  }
+</style>

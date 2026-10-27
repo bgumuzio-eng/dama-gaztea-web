@@ -1,0 +1,70 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Foto from './Foto.astro';
+import { fechaLarga, isoDia, PIEZA_CATEGORIA } from '../lib/formato';
+interface Props {
+  noticia: CollectionEntry<'noticias'>;
+}
+const { noticia } = Astro.props;
+const { titulo, fecha, categoria, imagenPrincipal, resumen } = noticia.data;
+---
+
+<article class="tarjeta noticia-card">
+  <Foto imagen={imagenPrincipal} pieza={PIEZA_CATEGORIA[categoria]} mostrarTexto={false} />
+  <div class="noticia-card__cuerpo">
+    <p class="noticia-card__meta">
+      <span class="etiqueta">{categoria}</span>
+      <time datetime={isoDia(fecha)}>{fechaLarga(fecha)}</time>
+    </p>
+    <h3><a href={`/noticias/${noticia.id}/`}>{titulo}</a></h3>
+    <p class="texto-suave pequeno">{resumen}</p>
+  </div>
+</article>
+
+<style>
+  .noticia-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.15s, transform 0.15s;
+  }
+  .noticia-card:hover {
+    box-shadow: var(--sombra-alta);
+    transform: translateY(-2px);
+  }
+  .noticia-card__cuerpo {
+    padding: 18px 20px 20px;
+  }
+  .noticia-card__meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    font-size: 14px;
+    color: var(--color-text-soft);
+    margin-bottom: 10px;
+  }
+  h3 {
+    font-size: 1.3rem;
+  }
+  h3 a {
+    color: var(--color-primary);
+    text-decoration: none;
+  }
+  /* Toda la tarjeta es clicable */
+  h3 a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+  h3 a:focus-visible {
+    outline: none;
+  }
+  .noticia-card:has(a:focus-visible) {
+    outline: 3px solid var(--color-gold);
+    outline-offset: 2px;
+  }
+  p:last-child {
+    margin: 0;
+  }
+</style>

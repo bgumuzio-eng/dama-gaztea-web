@@ -1,0 +1,191 @@
+---
+import { getEntry, render, type CollectionEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Foto from '../../components/Foto.astro';
+import NoticiaCard from '../../components/NoticiaCard.astro';
+import TorneoCard from '../../components/TorneoCard.astro';
+import ShareButtons from '../../components/ShareButtons.astro';
+import ajustes from '../../data/ajustes.json';
+import { noticiasPublicadas } from '../../lib/datos';
+import { fechaLarga, isoDia, PIEZA_CATEGORIA } from '../../lib/formato';
+
+export async function getStaticPaths() {
+  const noticias = await noticiasPublicadas();
+  return noticias.map((noticia) => ({ params: { slug: noticia.id }, props: { noticia, todas: noticias } }));
+}
+
+interface Props {
+  noticia: CollectionEntry<'noticias'>;
+  todas: CollectionEntry<'noticias'>[];
+}
+const { noticia, todas } = Astro.props;
+const { titulo, fecha, categoria, imagenPrincipal, resumen, etiquetas, galeria, fuente, torneoRelacionado } = noticia.data;
+const { Content } = await render(noticia);
+const torneo = torneoRelacionado ? await getEntry(torneoRelacionado) : undefined;
+
+// Relacionadas: misma categoría primero, después las más recientes.
+const relacionadas = todas
+  .filter((n) => n.id !== noticia.id)
+  .sort((a, b) => Number(b.data.categoria === categoria) - Number(a.data.categoria === categoria))
+  .slice(0, 3);
+---
+
+<Base titulo={titulo} descripcion={resumen}>
+  <article>
+    <header class="noticia__cabecera">
+      <div class="contenedor noticia__estrecho">
+        <nav class="migas pequeno" aria-label="Migas de pan">
+          <a href="/">Inicio</a> <span aria-hidden="true">/</span> <a href="/#noticias">Noticias</a>
+        </nav>
+        <p class="noticia__meta">
+          <span class="etiqueta etiqueta--oro">{categoria}</span>
+          <time datetime={isoDia(fecha)}>{fechaLarga(fecha)}</time>
+        </p>
+        <h1>{titulo}</h1>
+        <p class="noticia__entradilla">{resumen}</p>
+      </div>
+    </header>
+
+    <div class="contenedor noticia__estrecho">
+      <Foto imagen={imagenPrincipal} pieza={PIEZA_CATEGORIA[categoria]} class="noticia__foto" />
+
+      <div class="prosa noticia__cuerpo">
+        <Content />
+      </div>
+
+      {
+        fuente && (
+          <p class="pequeno texto-suave">
+            Fuente: <a href={fuente.url} rel="noopener">{fuente.nombre}</a>
+          </p>
+        )
+      }
+
+      {
+        galeria.length > 0 && (
+          <section class="noticia__galeria" aria-label="Galería de fotos">
+            <h2 class="visualmente-oculto">Galería</h2>
+            <ul>
+              {galeria.map((g) => (
+                <li>
+                  <Foto imagen={g} proporcion="4 / 3" pieza="peon" mostrarTexto={false} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+
+      {
+        torneo && (
+          <section class="noticia__torneo">
+            <h2 class="noticia__subtitulo">Torneo relacionado</h2>
+            <TorneoCard torneo={torneo} />
+          </section>
+        )
+      }
+
+      {
+        etiquetas.length > 0 && (
+          <ul class="noticia__etiquetas" aria-label="Etiquetas">
+            {etiquetas.map((e) => (
+              <li class="etiqueta">#{e}</li>
+            ))}
+          </ul>
+        )
+      }
+
+      <ShareButtons titulo={titulo} />
+
+      <p class="noticia__cierre">{ajustes.fraseCierre}</p>
+    </div>
+  </article>
+
+  <section class="seccion seccion--alterna">
+    <div class="contenedor">
+      <h2 class="titulo-dorado">También te puede interesar</h2>
+      <div class="rejilla">
+        {relacionadas.map((n) => <NoticiaCard noticia={n} />)}
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .noticia__estrecho {
+    max-width: calc(780px + 2 * var(--gutter));
+  }
+  .noticia__cabecera {
+    padding-block: 32px 28px;
+  }
+  .migas {
+    margin-bottom: 20px;
+    color: var(--color-text-soft);
+  }
+  .migas a {
+    color: var(--color-text-soft);
+  }
+  .noticia__meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--color-text-soft);
+    font-size: 14px;
+  }
+  .noticia__entradilla {
+    font-size: 1.2rem;
+    color: var(--color-text-soft);
+    margin: 0;
+  }
+  .noticia__estrecho :global(.noticia__foto) {
+    border-radius: var(--radio);
+    margin-bottom: 32px;
+  }
+  .noticia__cuerpo {
+    margin-bottom: 32px;
+  }
+  .noticia__galeria ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 32px;
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .noticia__galeria :global(.foto) {
+    border-radius: 6px;
+  }
+  .noticia__subtitulo {
+    font-size: 1.3rem;
+  }
+  .noticia__torneo {
+    margin-bottom: 32px;
+  }
+  .noticia__etiquetas {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .noticia__cierre {
+    margin: 48px 0 56px;
+    padding-top: 24px;
+    border-top: 1px solid var(--color-borde);
+    text-align: center;
+    font-family: var(--font-titulo);
+    font-style: italic;
+    font-size: 1.4rem;
+    color: var(--color-primary);
+  }
+  .noticia__cierre::after {
+    content: '';
+    display: block;
+    width: 48px;
+    height: 3px;
+    margin: 12px auto 0;
+    background: var(--color-gold);
+    border-radius: 2px;
+  }
+</style>

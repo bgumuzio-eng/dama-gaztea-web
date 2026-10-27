@@ -30,6 +30,15 @@ Este proyecto no tiene ninguna relación con los proyectos de RIF (web de RIF, r
 - El problema de la semana es un problema propio destacado en el mismo tablero.
 - Fuera de alcance: cuenta de alumno (fase 3); jugar online contra personas (descartado, se enlaza el equipo del club en Lichess).
 
+## Maqueta de fase 0 (`/astro`)
+
+- Astro 7 con content collections locales en `astro/src/content` (Markdown y JSON), alineadas con el esquema de la sección 6. El slug de Sanity equivale al nombre del fichero; Astro lo pasa a minúsculas.
+- Ajustes globales en `astro/src/data/ajustes.json` (futuro documento único `ajustes`).
+- Selector de tres tipografías en la franja amarilla de la maqueta (`data-tipo` en `<html>`, también `?tipo=2`). Se retira al elegir una.
+- Fotos: el componente `Foto` muestra un hueco con el texto alternativo mientras no hay foto real.
+- Comandos (desde `astro/`): `npm run dev`, `npm run build`, `node scripts/verificar-problemas.mjs` (comprueba que cada solución es legal), `node scripts/muestra-lichess.mjs` (descarga problemas de muestra de la API de Lichess).
+- Sanity no se instala hasta que el club apruebe el stack.
+
 ## Estructura del repositorio
 
 - `/astro` web

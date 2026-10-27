@@ -1,0 +1,79 @@
+---
+import Base from '../../layouts/Base.astro';
+import TableroProblema from '../../components/TableroProblema.astro';
+import ajustes from '../../data/ajustes.json';
+import { problemaDeLaSemana, problemasPublicados } from '../../lib/datos';
+
+const problemas = await problemasPublicados();
+const semana = await problemaDeLaSemana();
+---
+
+<Base titulo="Problemas de ajedrez" descripcion="Resuelve problemas de táctica en un tablero interactivo: mates, clavadas, horquillas y finales por niveles.">
+  <header class="problemas__cabecera">
+    <div class="contenedor">
+      <nav class="migas pequeno" aria-label="Migas de pan">
+        <a href="/">Inicio</a> <span aria-hidden="true">/</span> <span>Aprende</span>
+      </nav>
+      <h1>Problemas</h1>
+      <p>
+        Mueve las piezas y encuentra la mejor jugada. Elige nivel y tema, pide una pista si te atascas y mira cuánto dura tu
+        racha.
+        {semana && <> Empezamos por el <strong>problema de la semana</strong>, preparado por el profesor.</>}
+      </p>
+    </div>
+  </header>
+
+  <div class="contenedor seccion">
+    <TableroProblema problemas={problemas} inicial={semana?.id} />
+  </div>
+
+  <section class="seccion seccion--alterna">
+    <div class="contenedor creditos">
+      <div>
+        <h2 class="titulo-dorado">¿Quieres jugar partidas online?</h2>
+        <p>Únete al equipo del club en Lichess: torneos internos, partidas entre compañeros y análisis con el profesor.</p>
+        <a href={ajustes.equipoLichess} class="boton" rel="noopener">Equipo Dama Gaztea en Lichess</a>
+      </div>
+      <p class="pequeno texto-suave">
+        Además de los problemas de nuestras clases, usamos problemas de la
+        <a href="https://database.lichess.org/#puzzles" rel="noopener">base abierta de Lichess</a>, publicada con licencia
+        CC0.
+      </p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .problemas__cabecera {
+    background: var(--color-primary) var(--patron-tablero-claro);
+    color: var(--color-muted);
+    padding-block: 28px 40px;
+  }
+  .problemas__cabecera h1 {
+    color: var(--color-white);
+  }
+  .problemas__cabecera p {
+    max-width: 62ch;
+    margin: 0;
+  }
+  .problemas__cabecera strong {
+    color: var(--color-white);
+  }
+  .migas {
+    margin-bottom: 20px;
+  }
+  .migas a {
+    color: var(--color-muted);
+  }
+  .creditos {
+    display: grid;
+    gap: 24px;
+    align-items: end;
+  }
+  @media (min-width: 900px) {
+    .creditos {
+      grid-template-columns: 2fr 1fr;
+      gap: 56px;
+    }
+  }
+</style>

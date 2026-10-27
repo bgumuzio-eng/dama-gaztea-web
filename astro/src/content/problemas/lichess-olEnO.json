@@ -1,0 +1,23 @@
+{
+  "titulo": "",
+  "posicionFEN": "2kN1r2/ppp3p1/3p4/4p2Q/2P4p/PqNKP2P/6P1/6R1 b - - 2 27",
+  "enunciado": "Juegan negras y ganan",
+  "solucionJugadas": [
+    "e4+",
+    "Kd4",
+    "c5+",
+    "Kd5",
+    "Qxc3"
+  ],
+  "solucion": "",
+  "nivel": "medio",
+  "tema": [
+    "desviación",
+    "finales",
+    "clavada"
+  ],
+  "origen": "lichess",
+  "idLichess": "olEnO",
+  "puntuacionLichess": 1558,
+  "publicado": true
+}

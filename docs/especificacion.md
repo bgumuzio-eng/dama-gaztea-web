@@ -332,7 +332,9 @@ Base de datos de problemas de táctica que el visitante resuelve en un tablero i
 - Jugada incorrecta: aviso y la pieza vuelve a su casilla; se puede reintentar.
 - Pista: ilumina la pieza que hay que mover.
 - Ver solución: reproduce la línea completa con el texto explicativo, si existe.
-- Contador de aciertos y racha actual y mejor racha. Un problema cuenta como acierto solo si se resuelve sin pista ni solución.
+- Contador de aciertos y racha actual y mejor racha. Un problema cuenta como acierto solo si se resuelve a la primera: sin fallos, sin pista y sin ver la solución (si los fallos no contaran, se podría resolver por tanteo). Repetir un problema ya resuelto no cambia el marcador.
+- Se acepta cualquier jugada que dé mate aunque no sea la de la solución. Las coronaciones se hacen a dama automáticamente.
+- Además de arrastrar, se puede escribir la jugada en notación española (C, A, T, D, R), útil con teclado y lectores de pantalla.
 - Sin registro: el progreso (resueltos, aciertos, rachas) se guarda en el navegador con localStorage. Si el navegador lo borra, se empieza de cero sin errores.
 - Botón "Siguiente problema" que elige uno no resuelto del nivel y tema seleccionados.
 

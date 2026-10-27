@@ -1,0 +1,48 @@
+---
+interface Props {
+  titulo: string;
+}
+const { titulo } = Astro.props;
+const url = Astro.url.href;
+const texto = `${titulo} ${url}`;
+---
+
+<div class="compartir">
+  <span class="compartir__titulo">Compartir:</span>
+  <a class="boton boton--pequeno" href={`https://wa.me/?text=${encodeURIComponent(texto)}`} target="_blank" rel="noopener">WhatsApp</a>
+  <a class="boton boton--secundario boton--pequeno" href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`} target="_blank" rel="noopener">Facebook</a>
+  <button type="button" class="boton boton--secundario boton--pequeno" data-copiar={url}>Copiar enlace</button>
+  <button type="button" class="boton boton--secundario boton--pequeno" data-compartir={titulo} hidden>Instagram y más</button>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('[data-copiar]').forEach((b) =>
+    b.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(location.href);
+        b.textContent = 'Enlace copiado';
+      } catch {
+        b.textContent = 'No se pudo copiar';
+      }
+    }),
+  );
+  // Instagram no tiene enlace para compartir desde web: se usa el menú nativo del móvil.
+  document.querySelectorAll<HTMLButtonElement>('[data-compartir]').forEach((b) => {
+    if (!navigator.share) return;
+    b.hidden = false;
+    b.addEventListener('click', () => navigator.share({ title: b.dataset.compartir, url: location.href }).catch(() => {}));
+  });
+</script>
+
+<style>
+  .compartir {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+  .compartir__titulo {
+    font-weight: 600;
+    margin-right: 4px;
+  }
+</style>

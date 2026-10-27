@@ -1,0 +1,76 @@
+---
+import '@fontsource-variable/fraunces';
+import '@fontsource-variable/inter';
+import '@fontsource-variable/playfair-display';
+import '@fontsource/dm-serif-display';
+import '@fontsource-variable/dm-sans';
+import '../styles/global.css';
+import Cabecera from '../components/Cabecera.astro';
+import Pie from '../components/Pie.astro';
+import BotonWhatsApp from '../components/BotonWhatsApp.astro';
+import ajustes from '../data/ajustes.json';
+
+interface Props {
+  titulo?: string;
+  descripcion?: string;
+  whatsappMensaje?: string;
+}
+
+const { titulo, descripcion = `Academia y club de ajedrez en Bizkaia. ${ajustes.eslogan}`, whatsappMensaje } = Astro.props;
+const tituloCompleto = titulo ? `${titulo} | ${ajustes.nombreAcademia}` : `${ajustes.nombreAcademia}: ${ajustes.eslogan}`;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{tituloCompleto}</title>
+    <meta name="description" content={descripcion} />
+    <meta name="theme-color" content="#14532D" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={tituloCompleto} />
+    <meta property="og:description" content={descripcion} />
+    <meta property="og:locale" content="es_ES" />
+    <meta name="robots" content="noindex" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script is:inline>
+      // Tipografía elegida en la maqueta: ?tipo=2 en la URL o la última elegida.
+      (function () {
+        var t = new URLSearchParams(location.search).get('tipo');
+        try {
+          if (t) localStorage.setItem('dg-tipo', t);
+          else t = localStorage.getItem('dg-tipo');
+        } catch (e) {}
+        if (t === '2' || t === '3') document.documentElement.dataset.tipo = t;
+      })();
+    </script>
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="saltar" href="#contenido">Saltar al contenido</a>
+    <Cabecera />
+    <main id="contenido">
+      <slot />
+    </main>
+    <Pie />
+    <BotonWhatsApp mensaje={whatsappMensaje} />
+  </body>
+</html>
+
+<style>
+  .saltar {
+    position: absolute;
+    left: 16px;
+    top: -60px;
+    z-index: 100;
+    padding: 10px 16px;
+    background: var(--color-white);
+    color: var(--color-primary);
+    border-radius: var(--radio);
+    font-weight: 600;
+  }
+  .saltar:focus {
+    top: 12px;
+  }
+</style>

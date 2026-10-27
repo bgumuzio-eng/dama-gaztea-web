@@ -1,0 +1,97 @@
+---
+import { getEntry, type CollectionEntry } from 'astro:content';
+import { diaMes, fechaLarga, isoDia, TIPOS_TORNEO } from '../lib/formato';
+interface Props {
+  torneo: CollectionEntry<'torneos'>;
+  avisoPlazo?: boolean;
+}
+const { torneo, avisoPlazo = false } = Astro.props;
+const { nombre, fecha, horaInicio, lugar, tipo, perteneceAlCircuito, numeroDePrueba, fechaLimite } = torneo.data;
+const centro = lugar.centro ? await getEntry(lugar.centro) : undefined;
+const { dia, mes } = diaMes(fecha);
+---
+
+<article class="torneo-card">
+  <time class="torneo-card__fecha" datetime={isoDia(fecha)}>
+    <span class="torneo-card__dia">{dia}</span>
+    <span class="torneo-card__mes">{mes}</span>
+  </time>
+  <div class="torneo-card__info">
+    <p class="torneo-card__etiquetas">
+      <span class="etiqueta etiqueta--oro">{perteneceAlCircuito ? `Circuito · Prueba ${numeroDePrueba}` : TIPOS_TORNEO[tipo]}</span>
+      {avisoPlazo && fechaLimite && <span class="etiqueta etiqueta--alerta">Inscripción hasta el {fechaLarga(fechaLimite).replace(/ de \d{4}$/, '')}</span>}
+    </p>
+    <h3><a href={`/torneos/${torneo.id}/`}>{nombre}</a></h3>
+    <p class="texto-suave pequeno">
+      {horaInicio} h · {centro ? `${centro.data.nombre}, ${centro.data.localidad}` : lugar.texto}
+    </p>
+  </div>
+  <a href={`/torneos/${torneo.id}/`} class="boton boton--pequeno torneo-card__boton" tabindex="-1" aria-hidden="true">Ver e inscribirse</a>
+</article>
+
+<style>
+  .torneo-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 16px 20px;
+    align-items: center;
+    padding: 18px 20px;
+    background: var(--color-white);
+    border-radius: var(--radio);
+    box-shadow: var(--sombra);
+    border-left: 4px solid var(--color-gold);
+  }
+  .torneo-card__fecha {
+    display: grid;
+    place-items: center;
+    width: 68px;
+    height: 72px;
+    border-radius: var(--radio);
+    background: var(--color-primary);
+    color: var(--color-white);
+    line-height: 1;
+  }
+  .torneo-card__dia {
+    font-family: var(--font-titulo);
+    font-size: 1.9rem;
+    font-weight: var(--titulo-peso);
+  }
+  .torneo-card__mes {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-gold);
+    margin-top: -14px;
+  }
+  .torneo-card__etiquetas {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  h3 {
+    font-size: 1.2rem;
+    margin-bottom: 4px;
+  }
+  h3 a {
+    color: var(--color-primary);
+    text-decoration: none;
+  }
+  h3 a:hover {
+    text-decoration: underline;
+  }
+  .torneo-card__info p:last-child {
+    margin: 0;
+  }
+  .torneo-card__boton {
+    grid-column: 1 / -1;
+  }
+  @media (min-width: 720px) {
+    .torneo-card {
+      grid-template-columns: auto 1fr auto;
+    }
+    .torneo-card__boton {
+      grid-column: auto;
+    }
+  }
+</style>

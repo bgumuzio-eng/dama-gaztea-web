@@ -1,0 +1,484 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Foto from '../components/Foto.astro';
+import NoticiaCard from '../components/NoticiaCard.astro';
+import TorneoCard from '../components/TorneoCard.astro';
+import CentroCard from '../components/CentroCard.astro';
+import Mapa from '../components/Mapa.astro';
+import TableroFEN from '../components/TableroFEN.astro';
+import FormularioContacto from '../components/FormularioContacto.astro';
+import ajustes from '../data/ajustes.json';
+import { centrosActivos, noticiasPublicadas, problemaDeLaSemana, torneosProximos } from '../lib/datos';
+import { enlaceWhatsApp, fechaLarga, PIEZAS } from '../lib/formato';
+
+const noticias = (await noticiasPublicadas()).slice(0, 6);
+const torneos = await torneosProximos();
+const centros = await centrosActivos();
+const videos = (await getCollection('videos')).sort((a, b) => b.data.fecha.getTime() - a.data.fecha.getTime()).slice(0, 3);
+const problema = await problemaDeLaSemana();
+
+const accesos = [
+  { pieza: PIEZAS.dama, titulo: 'Academia', texto: 'Clases por niveles desde los 5 años, en grupos reducidos y con método propio.', href: '#academia', enlace: 'Conoce la academia' },
+  { pieza: PIEZAS.torre, titulo: 'Club y torneos', texto: 'Circuito Dama Gaztea, torneos escolares y competición federada.', href: '#torneos', enlace: 'Ver torneos' },
+  { pieza: PIEZAS.caballo, titulo: 'Aprende', texto: 'Problemas interactivos, vídeos por temas y el problema de la semana.', href: '/aprende/problemas/', enlace: 'Empieza a entrenar' },
+];
+
+const beneficios = ['Concentración', 'Razonamiento', 'Planificación', 'Creatividad', 'Toma de decisiones', 'Diversión'];
+const galeria = [
+  'Entrega de trofeos del circuito', 'Clase de iniciación', 'Simultáneas del profesor', 'Torneo escolar',
+  'Partida en el tablero gigante', 'Grupo de perfeccionamiento', 'Familias en el juego libre', 'Podio sub 10',
+];
+---
+
+<Base>
+  <section class="hero">
+    <div class="contenedor hero__rejilla">
+      <div class="hero__texto">
+        <p class="hero__ante">Academia y club de ajedrez en Bizkaia</p>
+        <h1>{ajustes.eslogan}</h1>
+        <p class="hero__intro">
+          Clases para niños, jóvenes y adultos en Bilbao, Getxo y Sestao. Torneos, circuito propio y una comunidad que disfruta
+          pensando.
+        </p>
+        <div class="hero__botones">
+          <a href="#centros" class="boton boton--claro">Clases y horarios</a>
+          <a href="#torneos" class="boton boton--contorno-claro">Próximos torneos</a>
+        </div>
+      </div>
+      <Foto
+        imagen={{ alt: 'Alumna pensando su jugada durante un torneo del circuito' }}
+        proporcion="4 / 3"
+        pieza="dama"
+        tono="verde"
+        class="hero__foto"
+      />
+    </div>
+  </section>
+
+  <section class="contenedor accesos" aria-label="Accesos principales">
+    {
+      accesos.map((a) => (
+        <article class="acceso">
+          <span class="acceso__pieza pieza" aria-hidden="true">
+            {a.pieza}
+          </span>
+          <h2>{a.titulo}</h2>
+          <p class="texto-suave">{a.texto}</p>
+          <a href={a.href} class="enlace-flecha">
+            {a.enlace}
+          </a>
+        </article>
+      ))
+    }
+  </section>
+
+  <section id="noticias" class="seccion">
+    <div class="contenedor">
+      <div class="seccion__cabecera">
+        <div>
+          <p class="antetitulo">Actualidad del club</p>
+          <h2 class="titulo-dorado">Últimas noticias</h2>
+        </div>
+        <a href="#noticias" class="enlace-flecha">Todas las noticias</a>
+      </div>
+      <div class="rejilla">
+        {noticias.map((n) => <NoticiaCard noticia={n} />)}
+      </div>
+    </div>
+  </section>
+
+  <section id="torneos" class="seccion seccion--alterna">
+    <div class="contenedor">
+      <div class="seccion__cabecera">
+        <div>
+          <p class="antetitulo">Club y torneos</p>
+          <h2 class="titulo-dorado">Próximos torneos y actividades</h2>
+        </div>
+        <a href="#torneos" class="enlace-flecha">Calendario completo</a>
+      </div>
+      <div class="lista-torneos">
+        {torneos.map((t, i) => <TorneoCard torneo={t} avisoPlazo={i === 0} />)}
+      </div>
+    </div>
+  </section>
+
+  <section id="centros" class="seccion">
+    <div class="contenedor centros">
+      <div>
+        <p class="antetitulo">Centros y horarios</p>
+        <h2 class="titulo-dorado">Clases cerca de casa</h2>
+        <p class="texto-suave">
+          Academias propias y extraescolares en colegios. Elige tu centro para ver grupos, horarios y cómo llegar.
+        </p>
+        <div class="centros__lista">
+          {centros.map((c) => <CentroCard centro={c} />)}
+        </div>
+      </div>
+      <Mapa centros={centros} />
+    </div>
+  </section>
+
+  <section id="academia" class="seccion seccion--alterna">
+    <div class="contenedor academia">
+      <Foto imagen={{ alt: 'El profesor explicando una posición en el tablero mural' }} proporcion="4 / 5" pieza="rey" class="academia__foto" />
+      <div>
+        <p class="antetitulo">La academia</p>
+        <h2 class="titulo-dorado">Mucho más que mover piezas</h2>
+        <p>
+          En Dama Gaztea enseñamos ajedrez como una herramienta para pensar. Cada clase combina juego, explicación y
+          retos adaptados a la edad y el nivel de cada alumno.
+        </p>
+        <ul class="beneficios">
+          {beneficios.map((b) => <li>{b}</li>)}
+        </ul>
+        <div class="profesor">
+          <p class="profesor__nombre">Nombre del profesor</p>
+          <p class="pequeno texto-suave">
+            Monitor titulado y jugador federado, con más de diez años enseñando ajedrez en colegios y academias de Bizkaia.
+          </p>
+        </div>
+        <a href="#academia" class="boton">Conoce la academia</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="seccion">
+    <div class="contenedor aprende">
+      <div>
+        <div class="seccion__cabecera">
+          <div>
+            <p class="antetitulo">Aprende</p>
+            <h2 class="titulo-dorado">Últimos vídeos</h2>
+          </div>
+          <a href={ajustes.redes.youtube} class="enlace-flecha" rel="noopener">Canal de YouTube</a>
+        </div>
+        <ul class="videos">
+          {
+            videos.map((v) => (
+              <li class="video">
+                <Foto imagen={{ alt: `Miniatura del vídeo ${v.data.titulo}` }} pieza="caballo" tono="verde" mostrarTexto={false} class="video__miniatura" />
+                <div>
+                  <p class="etiqueta">{v.data.tema}</p>
+                  <h3>{v.data.titulo}</h3>
+                  <p class="pequeno texto-suave">{v.data.explicacion}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+      {
+        problema && (
+          <aside class="semana">
+            <p class="antetitulo">Problema de la semana</p>
+            <h2>{problema.data.enunciado}</h2>
+            <p class="pequeno texto-suave">Semana del {fechaLarga(problema.data.destacadoSemana!)}</p>
+            <TableroFEN fen={problema.data.posicionFEN} etiqueta={`Posición del problema de la semana: ${problema.data.enunciado}`} />
+            <a href={`/aprende/problemas/?p=${problema.id}`} class="boton semana__boton">
+              Resuélvelo en el tablero
+            </a>
+          </aside>
+        )
+      }
+    </div>
+  </section>
+
+  <section class="seccion seccion--alterna">
+    <div class="contenedor">
+      <div class="seccion__cabecera">
+        <div>
+          <p class="antetitulo">Galería</p>
+          <h2 class="titulo-dorado">Momentos del club</h2>
+        </div>
+        <a href="#" class="pequeno">Sobre el uso de imágenes de menores</a>
+      </div>
+      <ul class="galeria">
+        {
+          galeria.map((g, i) => (
+            <li>
+              <Foto imagen={{ alt: g }} proporcion="1 / 1" pieza={(['peon', 'torre', 'caballo', 'dama'] as const)[i % 4]} mostrarTexto={false} />
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section id="contacto" class="seccion">
+    <div class="contenedor contacto">
+      <div>
+        <p class="antetitulo">Contacto</p>
+        <h2 class="titulo-dorado">Pide información</h2>
+        <p>Cuéntanos la edad y el nivel del alumno y te recomendamos el grupo que mejor encaja. Respondemos en menos de 24 horas.</p>
+        <ul class="contacto__datos">
+          <li><strong>Teléfono:</strong> <a href={`tel:+34${ajustes.telefono.replace(/\s/g, '')}`}>{ajustes.telefono}</a></li>
+          <li><strong>Correo:</strong> <a href={`mailto:${ajustes.email}`}>{ajustes.email}</a></li>
+          <li><strong>Centros:</strong> {centros.map((c) => c.data.localidad).join(', ')}</li>
+        </ul>
+        <div class="lista-difusion">
+          <p><strong>Únete a la lista de WhatsApp</strong> y recibe torneos, avisos y el problema de la semana.</p>
+          <a href={enlaceWhatsApp('Hola, quiero unirme a la lista de difusión de Dama Gaztea.')} class="boton boton--secundario" target="_blank" rel="noopener">
+            Únete a la lista
+          </a>
+        </div>
+      </div>
+      <div class="tarjeta contacto__formulario">
+        <FormularioContacto />
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero {
+    background: var(--color-primary) var(--patron-tablero-claro);
+    color: var(--color-white);
+    padding-block: clamp(40px, 7vw, 88px) clamp(72px, 9vw, 120px);
+  }
+  .hero__rejilla {
+    display: grid;
+    gap: 32px;
+    align-items: center;
+  }
+  @media (min-width: 900px) {
+    .hero__rejilla {
+      grid-template-columns: 1.1fr 1fr;
+      gap: 56px;
+    }
+  }
+  .hero__ante {
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-gold);
+  }
+  .hero h1 {
+    color: var(--color-white);
+    font-size: clamp(2.4rem, 1.5rem + 4vw, 4rem);
+    line-height: 1.05;
+    margin-bottom: 20px;
+  }
+  .hero__intro {
+    font-size: 1.1rem;
+    color: var(--color-muted);
+    max-width: 46ch;
+    margin-bottom: 28px;
+  }
+  .hero__botones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .hero :global(.hero__foto) {
+    border-radius: var(--radio);
+    border: 1px solid rgb(212 175 55 / 0.5);
+    box-shadow: 0 20px 48px rgb(0 0 0 / 0.25);
+  }
+
+  .accesos {
+    display: grid;
+    gap: 16px;
+    margin-top: -56px;
+    position: relative;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  }
+  .acceso {
+    padding: 24px;
+    background: var(--color-white);
+    border-radius: var(--radio);
+    box-shadow: var(--sombra-alta);
+  }
+  .acceso__pieza {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    margin-bottom: 14px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: var(--color-gold);
+    font-size: 28px;
+  }
+  .acceso h2 {
+    font-size: 1.5rem;
+    margin-bottom: 6px;
+  }
+
+  .lista-torneos {
+    display: grid;
+    gap: 14px;
+  }
+
+  .centros {
+    display: grid;
+    gap: 32px;
+    align-items: center;
+  }
+  @media (min-width: 900px) {
+    .centros {
+      grid-template-columns: 1fr 1fr;
+      gap: 56px;
+    }
+  }
+  .centros__lista {
+    display: grid;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .academia {
+    display: grid;
+    gap: 32px;
+    align-items: center;
+  }
+  @media (min-width: 900px) {
+    .academia {
+      grid-template-columns: 2fr 3fr;
+      gap: 56px;
+    }
+  }
+  .academia :global(.academia__foto) {
+    border-radius: var(--radio);
+    box-shadow: var(--sombra);
+    max-height: 520px;
+  }
+  .beneficios {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 8px 16px;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 24px;
+  }
+  .beneficios li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+  }
+  .beneficios li::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    flex: none;
+    background: var(--color-gold);
+    transform: rotate(45deg);
+  }
+  .profesor {
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    border-left: 3px solid var(--color-gold);
+    background: var(--color-white);
+    border-radius: 0 var(--radio) var(--radio) 0;
+  }
+  .profesor__nombre {
+    font-family: var(--font-titulo);
+    font-weight: var(--titulo-peso);
+    font-size: 1.2rem;
+    color: var(--color-primary);
+    margin-bottom: 4px;
+  }
+  .profesor p:last-child {
+    margin: 0;
+  }
+
+  .aprende {
+    display: grid;
+    gap: 40px;
+  }
+  @media (min-width: 960px) {
+    .aprende {
+      grid-template-columns: 1.4fr 1fr;
+      gap: 56px;
+    }
+  }
+  .videos {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 16px;
+  }
+  .video {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 16px;
+    align-items: center;
+  }
+  @media (min-width: 560px) {
+    .video {
+      grid-template-columns: 200px 1fr;
+    }
+  }
+  .video :global(.video__miniatura) {
+    border-radius: var(--radio);
+  }
+  .video h3 {
+    font-size: 1.15rem;
+    margin: 6px 0 4px;
+  }
+  .video p:last-child {
+    margin: 0;
+  }
+  .semana {
+    padding: 24px;
+    border-radius: var(--radio);
+    background: var(--color-surface);
+    border-top: 3px solid var(--color-gold);
+  }
+  .semana h2 {
+    font-size: 1.5rem;
+    margin-bottom: 4px;
+  }
+  .semana__boton {
+    width: 100%;
+    margin-top: 20px;
+  }
+
+  .galeria {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (min-width: 720px) {
+    .galeria {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+  }
+  .galeria :global(.foto) {
+    border-radius: 6px;
+  }
+
+  .contacto {
+    display: grid;
+    gap: 32px;
+  }
+  @media (min-width: 900px) {
+    .contacto {
+      grid-template-columns: 1fr 1fr;
+      gap: 56px;
+    }
+  }
+  .contacto__datos {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 24px;
+  }
+  .contacto__datos li {
+    margin-bottom: 6px;
+  }
+  .lista-difusion {
+    padding: 20px;
+    border-radius: var(--radio);
+    background: var(--color-surface);
+  }
+  .contacto__formulario {
+    padding: 24px;
+  }
+</style>

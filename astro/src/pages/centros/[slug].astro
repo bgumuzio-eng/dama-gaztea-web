@@ -1,0 +1,314 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Foto from '../../components/Foto.astro';
+import CentroCard from '../../components/CentroCard.astro';
+import TorneoCard from '../../components/TorneoCard.astro';
+import ajustes from '../../data/ajustes.json';
+import { centrosActivos, torneosProximos } from '../../lib/datos';
+import { enlaceWhatsApp, TIPOS_CENTRO } from '../../lib/formato';
+
+export async function getStaticPaths() {
+  const centros = await centrosActivos();
+  return centros.map((centro) => ({ params: { slug: centro.id }, props: { centro, todos: centros } }));
+}
+
+interface Props {
+  centro: CollectionEntry<'centros'>;
+  todos: CollectionEntry<'centros'>[];
+}
+const { centro, todos } = Astro.props;
+const { nombre, localidad, tipo, direccion, ubicacion, descripcion, grupos, mostrarPlazas, fotos } = centro.data;
+const otros = todos.filter((c) => c.id !== centro.id);
+const torneos = (await torneosProximos()).filter((t) => t.data.lugar.centro?.id === centro.id);
+const mensaje = `Hola, quiero información sobre las clases de ajedrez en ${nombre} (${localidad}).`;
+const mapa = `https://maps.google.com/maps?q=${ubicacion.lat},${ubicacion.lng}&z=15&output=embed`;
+
+const datosEstructurados = {
+  '@context': 'https://schema.org',
+  '@type': 'LocalBusiness',
+  name: `${ajustes.nombreAcademia}: ${nombre}`,
+  description: descripcion,
+  address: { '@type': 'PostalAddress', streetAddress: direccion, addressLocality: localidad, addressRegion: 'Bizkaia', addressCountry: 'ES' },
+  geo: { '@type': 'GeoCoordinates', latitude: ubicacion.lat, longitude: ubicacion.lng },
+  telephone: ajustes.telefono,
+};
+
+const textoPlazas = (n?: number) => (n === undefined ? '' : n === 0 ? 'Completo' : n === 1 ? '1 plaza' : `${n} plazas`);
+---
+
+<Base
+  titulo={`Clases de ajedrez en ${localidad}: ${nombre}`}
+  descripcion={`Clases de ajedrez en ${localidad}. ${descripcion}`}
+  whatsappMensaje={mensaje}
+>
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(datosEstructurados)} />
+
+  <header class="centro__cabecera">
+    <div class="contenedor">
+      <nav class="migas pequeno" aria-label="Migas de pan">
+        <a href="/">Inicio</a> <span aria-hidden="true">/</span> <a href="/#centros">Centros y horarios</a>
+      </nav>
+      <p class="antetitulo">{TIPOS_CENTRO[tipo]} · {localidad}</p>
+      <h1>Clases de ajedrez en {localidad}</h1>
+      <p class="centro__nombre">{nombre}</p>
+      <p class="centro__direccion">{direccion}</p>
+    </div>
+  </header>
+
+  <div class="contenedor centro__rejilla seccion">
+    <div class="centro__principal">
+      <p class="centro__descripcion">{descripcion}</p>
+
+      <h2 class="titulo-dorado">Grupos y horarios</h2>
+      <div class="tabla-envoltorio">
+        <table class="horarios">
+          <thead>
+            <tr>
+              <th scope="col">Grupo</th>
+              <th scope="col">Día</th>
+              <th scope="col">Horario</th>
+              <th scope="col">Edades</th>
+              {mostrarPlazas && <th scope="col">Plazas</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {
+              grupos.map((g) => (
+                <tr>
+                  <th scope="row">{g.nivel}</th>
+                  <td data-etiqueta="Día">{g.diaSemana}</td>
+                  <td data-etiqueta="Horario">
+                    {g.horaInicio} a {g.horaFin}
+                  </td>
+                  <td data-etiqueta="Edades">{g.edades}</td>
+                  {mostrarPlazas && (
+                    <td data-etiqueta="Plazas">
+                      <span class:list={['plazas', { 'plazas--completo': g.plazasDisponibles === 0 }]}>{textoPlazas(g.plazasDisponibles)}</span>
+                    </td>
+                  )}
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <h2 class="titulo-dorado">Fotos</h2>
+      <ul class="centro__fotos">
+        {
+          fotos.map((f, i) => (
+            <li>
+              <Foto imagen={f} proporcion="4 / 3" pieza={(['dama', 'peon', 'torre'] as const)[i % 3]} />
+            </li>
+          ))
+        }
+      </ul>
+
+      {
+        torneos.length > 0 && (
+          <>
+            <h2 class="titulo-dorado">Próximos torneos aquí</h2>
+            <div class="centro__torneos">
+              {torneos.map((t) => (
+                <TorneoCard torneo={t} />
+              ))}
+            </div>
+          </>
+        )
+      }
+    </div>
+
+    <aside class="centro__lateral">
+      <div class="tarjeta centro__contacto">
+        <h2>¿Te interesa este centro?</h2>
+        <p class="pequeno texto-suave">Escríbenos y te decimos qué grupo encaja mejor y si hay plaza.</p>
+        <a href={enlaceWhatsApp(mensaje)} class="boton centro__boton" target="_blank" rel="noopener">Pregunta por WhatsApp</a>
+        <a href="/#contacto" class="boton boton--secundario centro__boton">Formulario de información</a>
+      </div>
+      <div class="centro__mapa">
+        <iframe
+          src={mapa}
+          title={`Mapa de ${nombre}`}
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          width="100%"
+          height="300"></iframe>
+      </div>
+    </aside>
+  </div>
+
+  <section class="seccion seccion--alterna">
+    <div class="contenedor">
+      <h2 class="titulo-dorado">Otros centros</h2>
+      <div class="rejilla">
+        {otros.map((c) => <CentroCard centro={c} />)}
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .centro__cabecera {
+    background: var(--color-primary) var(--patron-tablero-claro);
+    color: var(--color-white);
+    padding-block: 28px 40px;
+  }
+  .centro__cabecera h1 {
+    color: var(--color-white);
+    margin-bottom: 8px;
+  }
+  .centro__cabecera .antetitulo {
+    color: var(--color-gold);
+  }
+  .migas {
+    margin-bottom: 20px;
+  }
+  .migas a {
+    color: var(--color-muted);
+  }
+  .centro__nombre {
+    font-family: var(--font-titulo);
+    font-size: 1.3rem;
+    margin-bottom: 4px;
+  }
+  .centro__direccion {
+    color: var(--color-muted);
+    margin: 0;
+  }
+  .centro__rejilla {
+    display: grid;
+    gap: 40px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 960px) {
+    .centro__rejilla {
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 56px;
+      align-items: start;
+    }
+    .centro__lateral {
+      position: sticky;
+      top: 100px;
+    }
+  }
+  .centro__descripcion {
+    font-size: 1.15rem;
+    margin-bottom: 40px;
+  }
+  .centro__principal h2 {
+    margin-top: 8px;
+  }
+  .tabla-envoltorio {
+    overflow-x: auto;
+    margin-bottom: 40px;
+    border-radius: var(--radio);
+    box-shadow: var(--sombra);
+  }
+  .horarios {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+    background: var(--color-white);
+  }
+  .horarios th,
+  .horarios td {
+    padding: 12px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--color-borde);
+    white-space: nowrap;
+  }
+  .horarios thead th {
+    background: var(--color-primary);
+    color: var(--color-white);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .horarios tbody th {
+    color: var(--color-primary);
+  }
+  .horarios tbody tr:nth-child(even) {
+    background: var(--color-surface);
+  }
+  /* En móvil cada grupo se muestra como una ficha en lugar de una fila */
+  @media (max-width: 639px) {
+    .horarios thead {
+      display: none;
+    }
+    .horarios,
+    .horarios tbody,
+    .horarios tr,
+    .horarios th,
+    .horarios td {
+      display: block;
+    }
+    .horarios tbody tr {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--color-borde);
+    }
+    .horarios tbody th,
+    .horarios td {
+      border: 0;
+      padding: 2px 16px;
+      white-space: normal;
+    }
+    .horarios tbody th {
+      font-size: 1.05rem;
+      padding-bottom: 6px;
+    }
+    .horarios td {
+      display: flex;
+      gap: 8px;
+    }
+    .horarios td::before {
+      content: attr(data-etiqueta);
+      min-width: 72px;
+      font-size: 14px;
+      color: var(--color-text-soft);
+    }
+  }
+  .plazas {
+    font-weight: 600;
+    color: var(--color-accent);
+  }
+  .plazas--completo {
+    color: var(--color-text-soft);
+  }
+  .centro__fotos {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 40px;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  }
+  .centro__fotos :global(.foto) {
+    border-radius: 6px;
+  }
+  .centro__torneos {
+    display: grid;
+    gap: 12px;
+  }
+  .centro__contacto {
+    padding: 24px;
+    margin-bottom: 20px;
+    border-top: 3px solid var(--color-gold);
+  }
+  .centro__contacto h2 {
+    font-size: 1.35rem;
+  }
+  .centro__boton {
+    width: 100%;
+    margin-top: 10px;
+  }
+  .centro__mapa {
+    border-radius: var(--radio);
+    overflow: hidden;
+    box-shadow: var(--sombra);
+  }
+  .centro__mapa iframe {
+    display: block;
+    border: 0;
+  }
+</style>

@@ -1,0 +1,12 @@
+{
+  "titulo": "El pasillo cerrado",
+  "posicionFEN": "6k1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1",
+  "enunciado": "Juegan blancas y dan mate en 1",
+  "solucionJugadas": ["Rd8#"],
+  "solucion": "Los propios peones negros encierran a su rey en la octava fila. La torre entra por la columna d y no hay ninguna pieza que pueda tapar el jaque.",
+  "nivel": "facil",
+  "tema": ["mate en 1", "mate del pasillo"],
+  "origen": "propio",
+  "destacadoSemana": "2026-10-26",
+  "publicado": true
+}

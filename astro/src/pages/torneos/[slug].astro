@@ -1,0 +1,276 @@
+---
+import { getCollection, getEntry, render, type CollectionEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Foto from '../../components/Foto.astro';
+import { fechaLarga, diaSemana, isoDia, TIPOS_TORNEO } from '../../lib/formato';
+
+export async function getStaticPaths() {
+  const torneos = await getCollection('torneos');
+  return torneos.map((torneo) => ({ params: { slug: torneo.id }, props: { torneo } }));
+}
+
+interface Props {
+  torneo: CollectionEntry<'torneos'>;
+}
+const { torneo } = Astro.props;
+const { nombre, fecha, horaInicio, lugar, tipo, perteneceAlCircuito, numeroDePrueba, bases, inscripcion, fechaLimite, estado, cronica, fotos } =
+  torneo.data;
+const { Content } = await render(torneo);
+const centro = lugar.centro ? await getEntry(lugar.centro) : undefined;
+const sitio = centro ? `${centro.data.nombre}, ${centro.data.localidad}` : (lugar.texto ?? '');
+const direccion = centro?.data.direccion ?? lugar.texto ?? '';
+const plazoAbierto = estado === 'proximo' && (!fechaLimite || fechaLimite.getTime() >= Date.now() - 864e5);
+
+const datosEstructurados = {
+  '@context': 'https://schema.org',
+  '@type': 'Event',
+  name: nombre,
+  startDate: `${isoDia(fecha)}T${horaInicio}:00+01:00`,
+  eventStatus: estado === 'cancelado' ? 'https://schema.org/EventCancelled' : 'https://schema.org/EventScheduled',
+  eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+  location: { '@type': 'Place', name: sitio, address: direccion },
+  organizer: { '@type': 'Organization', name: 'Dama Gaztea Ajedrez' },
+};
+
+const despues = [
+  { titulo: 'Crónica', texto: 'El resumen del torneo con lo más destacado de cada categoría.' },
+  { titulo: 'Clasificación', texto: 'Tabla final por categorías y enlace a Chess-Results.' },
+  { titulo: 'Fotos', texto: 'Galería de la jornada y la entrega de premios.' },
+  { titulo: 'Partidas', texto: 'Las mejores partidas en un tablero reproducible.' },
+];
+---
+
+<Base titulo={nombre} descripcion={`${nombre}. ${fechaLarga(fecha)} en ${sitio}.`}>
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(datosEstructurados)} />
+
+  <header class="torneo__cabecera">
+    <div class="contenedor">
+      <nav class="migas pequeno" aria-label="Migas de pan">
+        <a href="/">Inicio</a> <span aria-hidden="true">/</span> <a href="/#torneos">Club y torneos</a>
+      </nav>
+      <p class="torneo__etiquetas">
+        <span class="etiqueta etiqueta--oro-solido">{perteneceAlCircuito ? `Circuito Dama Gaztea · Prueba ${numeroDePrueba}` : TIPOS_TORNEO[tipo]}</span>
+        <span class="etiqueta">{estado === 'proximo' ? 'Próximo' : estado === 'celebrado' ? 'Celebrado' : 'Cancelado'}</span>
+      </p>
+      <h1>{nombre}</h1>
+    </div>
+  </header>
+
+  <div class="contenedor torneo__rejilla seccion">
+    <div>
+      <dl class="torneo__datos">
+        <div>
+          <dt>Fecha</dt>
+          <dd><time datetime={isoDia(fecha)}>{diaSemana(fecha)}, {fechaLarga(fecha)}</time></dd>
+        </div>
+        <div>
+          <dt>Hora</dt>
+          <dd>{horaInicio} h</dd>
+        </div>
+        <div>
+          <dt>Lugar</dt>
+          <dd>
+            {centro ? <a href={`/centros/${centro.id}/`}>{sitio}</a> : sitio}
+            <span class="pequeno texto-suave">{direccion}</span>
+          </dd>
+        </div>
+      </dl>
+
+      <div class="prosa torneo__descripcion">
+        <Content />
+      </div>
+
+      {
+        estado === 'celebrado' && cronica ? (
+          <section>
+            <h2 class="titulo-dorado">Crónica</h2>
+            <p>{cronica}</p>
+          </section>
+        ) : (
+          <section class="torneo__despues">
+            <h2 class="titulo-dorado">Después del torneo</h2>
+            <p class="texto-suave">Cuando se celebre, en esta misma página aparecerán:</p>
+            <ul>
+              {despues.map((d) => (
+                <li>
+                  <strong>{d.titulo}</strong>
+                  <span class="pequeno texto-suave">{d.texto}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+
+      {
+        fotos.length > 0 && (
+          <ul class="torneo__fotos">
+            {fotos.map((f) => (
+              <li>
+                <Foto imagen={f} proporcion="4 / 3" pieza="torre" />
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </div>
+
+    <aside class="torneo__lateral">
+      <div class="tarjeta torneo__inscripcion">
+        <h2>Inscripción</h2>
+        {
+          plazoAbierto ? (
+            <>
+              {fechaLimite && <p class="etiqueta etiqueta--alerta">Plazo hasta el {fechaLarga(fechaLimite)}</p>}
+              <p class="pequeno texto-suave">
+                {inscripcion.tipo === 'formulario'
+                  ? 'Rellena el formulario y recibirás la confirmación por correo.'
+                  : 'La inscripción se hace en la web del organizador.'}
+              </p>
+              <a
+                href={inscripcion.tipo === 'formulario' ? '/#contacto' : inscripcion.url}
+                class="boton torneo__boton"
+                {...(inscripcion.tipo === 'externa' ? { target: '_blank', rel: 'noopener' } : {})}
+              >
+                Inscribirme
+              </a>
+            </>
+          ) : (
+            <p class="texto-suave">La inscripción está cerrada.</p>
+          )
+        }
+        {
+          bases && (
+            <a href={bases.url} class="boton boton--secundario torneo__boton">
+              {bases.titulo}
+            </a>
+          )
+        }
+      </div>
+      {
+        perteneceAlCircuito && (
+          <div class="torneo__circuito">
+            <p class="antetitulo">Circuito Dama Gaztea</p>
+            <p class="pequeno">
+              Esta prueba suma puntos para la clasificación acumulada de la temporada. La clasificación se publicará en la web
+              en la fase 2, leída directamente de la hoja de Google del circuito.
+            </p>
+          </div>
+        )
+      }
+    </aside>
+  </div>
+</Base>
+
+<style>
+  .torneo__cabecera {
+    background: var(--color-primary) var(--patron-tablero-claro);
+    color: var(--color-white);
+    padding-block: 28px 40px;
+  }
+  .torneo__cabecera h1 {
+    color: var(--color-white);
+    margin: 0;
+    max-width: 24ch;
+  }
+  .migas {
+    margin-bottom: 20px;
+  }
+  .migas a {
+    color: var(--color-muted);
+  }
+  .torneo__etiquetas {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .torneo__rejilla {
+    display: grid;
+    gap: 40px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 960px) {
+    .torneo__rejilla {
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 56px;
+      align-items: start;
+    }
+    .torneo__lateral {
+      position: sticky;
+      top: 100px;
+    }
+  }
+  .torneo__datos {
+    display: grid;
+    gap: 12px;
+    margin: 0 0 32px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+  .torneo__datos div {
+    padding: 14px 16px;
+    border-radius: var(--radio);
+    background: var(--color-surface);
+    border-left: 3px solid var(--color-gold);
+  }
+  .torneo__datos dt {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+  .torneo__datos dd {
+    margin: 4px 0 0;
+    font-weight: 600;
+    color: var(--color-primary);
+  }
+  .torneo__datos dd span {
+    display: block;
+    font-weight: 400;
+  }
+  .torneo__descripcion {
+    margin-bottom: 40px;
+  }
+  .torneo__despues ul {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+  .torneo__despues li {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px;
+    border: 1px dashed var(--color-borde);
+    border-radius: var(--radio);
+  }
+  .torneo__inscripcion {
+    padding: 24px;
+    border-top: 3px solid var(--color-gold);
+    margin-bottom: 20px;
+  }
+  .torneo__inscripcion h2 {
+    font-size: 1.4rem;
+  }
+  .torneo__boton {
+    width: 100%;
+    margin-top: 10px;
+  }
+  .torneo__circuito {
+    padding: 20px;
+    border-radius: var(--radio);
+    background: var(--color-surface);
+  }
+  .torneo__circuito p:last-child {
+    margin: 0;
+  }
+  .torneo__fotos {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(2, 1fr);
+  }
+</style>

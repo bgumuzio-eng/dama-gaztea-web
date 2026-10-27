@@ -1,0 +1,410 @@
+---
+// Entrenador de problemas: el visitante mueve y se valida cada jugada contra solucionJugadas.
+// Toda la lógica está en src/scripts/problemas.ts y funciona sin servidor.
+import type { CollectionEntry } from 'astro:content';
+import { NIVELES } from '../lib/formato';
+import { TEMAS_PROBLEMA } from '../content.config';
+import '../styles/tablero.css';
+
+interface Props {
+  problemas: CollectionEntry<'problemas'>[];
+  inicial?: string;
+}
+const { problemas, inicial } = Astro.props;
+
+const datos = problemas.map((p) => ({
+  id: p.id,
+  titulo: p.data.titulo,
+  posicionFEN: p.data.posicionFEN,
+  enunciado: p.data.enunciado,
+  solucionJugadas: p.data.solucionJugadas,
+  solucion: p.data.solucion,
+  nivel: p.data.nivel,
+  tema: p.data.tema,
+  origen: p.data.origen,
+  idLichess: p.data.idLichess,
+  puntuacionLichess: p.data.puntuacionLichess,
+}));
+const temasUsados = TEMAS_PROBLEMA.filter((t) => problemas.some((p) => p.data.tema.includes(t)));
+const nombre = (p: (typeof datos)[number]) => p.titulo || `Problema de Lichess ${p.idLichess}`;
+---
+
+<section class="entrenador" data-problemas data-inicial={inicial}>
+  <script type="application/json" set:html={JSON.stringify(datos)} />
+
+  <div class="entrenador__cabeza">
+    <p class="entrenador__distintivo" data-distintivo></p>
+    <h2 class="entrenador__enunciado" data-enunciado>Cargando problema...</h2>
+    <p class="entrenador__meta pequeno texto-suave" data-meta></p>
+  </div>
+
+  <div class="entrenador__tablero">
+    <div class="tablero" data-tablero></div>
+  </div>
+
+  <div class="entrenador__acciones">
+    <p class="entrenador__mensaje" data-mensaje role="status" aria-live="polite"></p>
+    <div class="entrenador__botones">
+      <button type="button" class="boton boton--secundario boton--pequeno" data-accion="pista">Pista</button>
+      <button type="button" class="boton boton--secundario boton--pequeno" data-accion="solucion">Ver solución</button>
+      <button type="button" class="boton boton--secundario boton--pequeno" data-accion="reiniciar">Reiniciar</button>
+      <button type="button" class="boton boton--pequeno" data-accion="siguiente">Siguiente problema</button>
+    </div>
+    <form class="entrenador__jugada" data-form-jugada>
+      <label for="jugada-texto">O escribe la jugada</label>
+      <div>
+        <input id="jugada-texto" name="jugada" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Ejemplo: Cf3, Txd8, O-O" />
+        <button type="submit" class="boton boton--pequeno">Jugar</button>
+      </div>
+    </form>
+    <div class="solucion" data-solucion hidden>
+      <h3>Solución</h3>
+      <p class="solucion__jugadas" data-solucion-jugadas></p>
+      <p data-solucion-texto></p>
+    </div>
+    <dl class="marcador">
+      <div><dt>Aciertos</dt><dd data-marcador="aciertos">0</dd></div>
+      <div><dt>Racha</dt><dd data-marcador="racha">0</dd></div>
+      <div><dt>Mejor racha</dt><dd data-marcador="mejorRacha">0</dd></div>
+      <div><dt>Resueltos</dt><dd data-marcador="resueltos">0/{datos.length}</dd></div>
+    </dl>
+    <p class="pequeno texto-suave">
+      Cuenta como acierto si lo resuelves a la primera, sin fallos, pistas ni solución. Tu progreso se guarda solo en este
+      navegador. <button type="button" class="enlace-boton" data-accion="borrar">Empezar de cero</button>
+    </p>
+  </div>
+
+  <div class="entrenador__filtros">
+    <fieldset class="filtro-nivel">
+      <legend>Nivel</legend>
+      <label><input type="radio" name="nivel" value="todos" checked /> Todos</label>
+      {
+        Object.entries(NIVELES).map(([valor, texto]) => (
+          <label>
+            <input type="radio" name="nivel" value={valor} /> {texto}
+          </label>
+        ))
+      }
+    </fieldset>
+    <label class="filtro-tema">
+      Tema
+      <select name="tema">
+        <option value="todos">Todos los temas</option>
+        {temasUsados.map((t) => <option value={t}>{t[0].toUpperCase() + t.slice(1)}</option>)}
+      </select>
+    </label>
+  </div>
+
+  <div class="entrenador__lista">
+    <h2 class="titulo-dorado">Todos los problemas</h2>
+    <ol class="lista-problemas">
+      {
+        datos.map((p) => (
+          <li data-item={p.id} data-nivel={p.nivel} data-tema={p.tema.join('|')}>
+            <button type="button" data-cargar={p.id}>
+              <span class={`nivel nivel--${p.nivel}`}>{NIVELES[p.nivel]}</span>
+              <span class="lista-problemas__nombre">{nombre(p)}</span>
+              <span class="lista-problemas__temas pequeno texto-suave">{p.tema.join(', ')}</span>
+              {p.origen === 'propio' && <span class="etiqueta etiqueta--oro">Dama Gaztea</span>}
+              <span class="lista-problemas__estado" data-estado aria-label="" />
+            </button>
+          </li>
+        ))
+      }
+    </ol>
+    <p class="pequeno texto-suave" data-sin-resultados hidden>No hay problemas con ese nivel y tema.</p>
+  </div>
+</section>
+
+<script src="../scripts/problemas.ts"></script>
+
+<style>
+  .entrenador {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'cabeza' 'tablero' 'acciones' 'filtros' 'lista';
+  }
+  .entrenador__cabeza {
+    grid-area: cabeza;
+  }
+  .entrenador__tablero {
+    grid-area: tablero;
+    max-width: 560px;
+    width: 100%;
+    justify-self: center;
+  }
+  .entrenador__acciones {
+    grid-area: acciones;
+  }
+  .entrenador__filtros {
+    grid-area: filtros;
+  }
+  .entrenador__lista {
+    grid-area: lista;
+    margin-top: 24px;
+  }
+  @media (min-width: 900px) {
+    .entrenador {
+      column-gap: 40px;
+      grid-template-columns: minmax(0, 560px) minmax(0, 1fr);
+      grid-template-areas: 'tablero filtros' 'tablero cabeza' 'tablero acciones' 'lista lista';
+      align-items: start;
+    }
+    .entrenador__acciones {
+      align-self: start;
+    }
+  }
+
+  .entrenador__distintivo {
+    min-height: 1.6em;
+    margin-bottom: 8px;
+  }
+  .entrenador__enunciado {
+    margin-bottom: 4px;
+  }
+  .entrenador__meta {
+    margin: 0;
+  }
+
+  .entrenador__mensaje {
+    min-height: 3em;
+    padding: 12px 16px;
+    border-radius: var(--radio);
+    background: var(--color-surface);
+    border-left: 4px solid var(--color-accent);
+    font-weight: 500;
+  }
+  .entrenador__mensaje[data-tipo='ok'] {
+    border-left-color: var(--color-gold);
+    background: rgb(212 175 55 / 0.14);
+  }
+  .entrenador__mensaje[data-tipo='error'] {
+    border-left-color: var(--color-alert);
+    background: #fdecea;
+  }
+
+  .entrenador__botones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .entrenador__jugada {
+    margin-bottom: 16px;
+  }
+  .entrenador__jugada label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .entrenador__jugada div {
+    display: flex;
+    gap: 8px;
+  }
+  .entrenador__jugada input {
+    flex: 1;
+    min-width: 0;
+    min-height: 40px;
+    padding: 8px 12px;
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio);
+    font: inherit;
+  }
+
+  .solucion {
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio);
+  }
+  .solucion h3 {
+    font-size: 1.1rem;
+    margin-bottom: 6px;
+  }
+  .solucion__jugadas {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .solucion p:last-child {
+    margin: 0;
+  }
+
+  .marcador {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin: 0 0 12px;
+  }
+  .marcador div {
+    padding: 10px 8px;
+    border-radius: var(--radio);
+    background: var(--color-primary);
+    text-align: center;
+  }
+  .marcador dt {
+    font-size: 12px;
+    color: var(--color-muted);
+  }
+  .marcador dd {
+    margin: 2px 0 0;
+    font-family: var(--font-titulo);
+    font-size: 1.6rem;
+    font-weight: var(--titulo-peso);
+    color: var(--color-white);
+    font-variant-numeric: tabular-nums;
+  }
+  .enlace-boton {
+    border: 0;
+    padding: 0;
+    background: none;
+    color: var(--color-accent);
+    font: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  .entrenador__filtros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    align-items: end;
+    padding: 16px;
+    border-radius: var(--radio);
+    background: var(--color-surface);
+  }
+  .filtro-nivel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .filtro-nivel legend,
+  .filtro-tema {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .filtro-nivel label {
+    position: relative;
+  }
+  .filtro-nivel input {
+    position: absolute;
+    opacity: 0;
+  }
+  .filtro-nivel label {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    padding: 4px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--color-borde);
+    background: var(--color-white);
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .filtro-nivel label:has(input:checked) {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-white);
+  }
+  .filtro-nivel label:has(input:focus-visible) {
+    outline: 3px solid var(--color-gold);
+    outline-offset: 2px;
+  }
+  .filtro-tema {
+    display: flex;
+    flex-direction: column;
+  }
+  .filtro-tema select {
+    min-height: 36px;
+    padding: 4px 10px;
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio);
+    font: inherit;
+    font-weight: 400;
+    background: var(--color-white);
+  }
+
+  .lista-problemas {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  }
+  .lista-problemas li[hidden] {
+    display: none;
+  }
+  .lista-problemas button {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: 'nivel nombre estado' 'nivel temas estado' 'nivel marca estado';
+    column-gap: 12px;
+    align-items: center;
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio);
+    background: var(--color-white);
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
+  .lista-problemas button:hover {
+    border-color: var(--color-accent);
+  }
+  .lista-problemas li.actual button {
+    border-color: var(--color-primary);
+    box-shadow: inset 4px 0 0 var(--color-gold);
+  }
+  .lista-problemas .nivel {
+    grid-area: nivel;
+  }
+  .lista-problemas__nombre {
+    grid-area: nombre;
+    font-weight: 600;
+  }
+  .lista-problemas__temas {
+    grid-area: temas;
+  }
+  .lista-problemas .etiqueta {
+    grid-area: marca;
+    justify-self: start;
+    margin-top: 4px;
+  }
+  .lista-problemas__estado {
+    grid-area: estado;
+    font-size: 1.3rem;
+    color: var(--color-accent);
+  }
+  .nivel {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    padding: 6px 0;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .nivel--facil {
+    background: var(--color-surface);
+    color: var(--color-accent);
+  }
+  .nivel--medio {
+    background: var(--color-accent);
+    color: var(--color-white);
+  }
+  .nivel--dificil {
+    background: var(--color-primary);
+    color: var(--color-gold);
+  }
+</style>

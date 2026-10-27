@@ -1,0 +1,20 @@
+{
+  "nombreAcademia": "Dama Gaztea Ajedrez",
+  "eslogan": "Aprende jugando. Crece pensando.",
+  "fraseCierre": "Y disfruta de cada movimiento.",
+  "telefono": "600 000 000",
+  "whatsapp": {
+    "numero": "34600000000",
+    "mensaje": "Hola, quiero información sobre las clases de ajedrez de Dama Gaztea."
+  },
+  "email": "info@damagaztea.com",
+  "redes": {
+    "instagram": "https://www.instagram.com/",
+    "tiktok": "https://www.tiktok.com/",
+    "youtube": "https://www.youtube.com/"
+  },
+  "direccionFiscal": "Pendiente",
+  "hojaCircuito": "",
+  "mostrarTarifas": false,
+  "equipoLichess": "https://lichess.org/team"
+}

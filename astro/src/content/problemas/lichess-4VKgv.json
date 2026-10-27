@@ -1,0 +1,19 @@
+{
+  "titulo": "",
+  "posicionFEN": "r3kb1r/1p3ppp/p1n1p3/1Q1p1b2/3PnB2/q3PN2/P2NBPPP/1R3RK1 w kq - 0 13",
+  "enunciado": "Juegan blancas y ganan",
+  "solucionJugadas": [
+    "Qxb7",
+    "Nd8",
+    "Qxa8"
+  ],
+  "solucion": "",
+  "nivel": "facil",
+  "tema": [
+    "horquilla"
+  ],
+  "origen": "lichess",
+  "idLichess": "4VKgv",
+  "puntuacionLichess": 967,
+  "publicado": true
+}

@@ -1,0 +1,24 @@
+---
+// Diagrama estático de una posición FEN. Se orienta hacia el bando que mueve.
+import '../styles/tablero.css';
+interface Props {
+  fen: string;
+  etiqueta: string;
+}
+const { fen, etiqueta } = Astro.props;
+---
+
+<div class="tablero" data-tablero-fen={fen} role="img" aria-label={etiqueta}></div>
+
+<script>
+  import { Chessground } from 'chessground';
+  document.querySelectorAll<HTMLElement>('[data-tablero-fen]').forEach((el) => {
+    const fen = el.dataset.tableroFen!;
+    Chessground(el, {
+      fen,
+      orientation: fen.split(' ')[1] === 'b' ? 'black' : 'white',
+      viewOnly: true,
+      coordinates: false,
+    });
+  });
+</script>

@@ -1,0 +1,66 @@
+---
+// Logotipo tipográfico provisional hasta que llegue el logo definitivo.
+import { PIEZAS } from '../lib/formato';
+interface Props {
+  eslogan?: boolean;
+}
+const { eslogan = false } = Astro.props;
+---
+
+<a href="/" class="logo" aria-label="Dama Gaztea Ajedrez, inicio">
+  <span class="logo__marca pieza" aria-hidden="true">{PIEZAS.dama}</span>
+  <span class="logo__texto">
+    <span class="logo__nombre">DAMA GAZTEA</span>
+    <span class="logo__sub">AJEDREZ</span>
+    {eslogan && <span class="logo__eslogan">Aprende jugando. Crece pensando.</span>}
+  </span>
+</a>
+
+<style>
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--color-white);
+    text-decoration: none;
+  }
+  .logo:hover {
+    color: var(--color-white);
+  }
+  .logo__marca {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    flex: none;
+    border: 2px solid var(--color-gold);
+    border-radius: 6px;
+    color: var(--color-gold);
+    font-size: 26px;
+    background: var(--patron-tablero-claro);
+  }
+  .logo__texto {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+  }
+  .logo__nombre {
+    font-family: var(--font-titulo);
+    font-weight: var(--titulo-peso);
+    font-size: 1.25rem;
+    letter-spacing: 0.06em;
+  }
+  .logo__sub {
+    margin-top: 4px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.42em;
+    color: var(--color-gold);
+  }
+  .logo__eslogan {
+    margin-top: 8px;
+    font-size: 0.8rem;
+    color: var(--color-muted);
+    letter-spacing: 0.01em;
+  }
+</style>
