@@ -4,6 +4,16 @@ Web de la academia y club de ajedrez Dama Gaztea (Bizkaia) que sustituye al blog
 
 Estado: fase 0 (validación). Propuesta pendiente de aprobación por el club; el stack aún no está confirmado.
 
+## Proyecto independiente de RIF
+
+Este proyecto no tiene ninguna relación con los proyectos de RIF (web de RIF, rif-pipeline, rif-startup-agent ni nada bajo `Desktop/Claude`).
+
+- Ubicación local: `C:\Users\bgumu\Desktop\DamaGaztea`, con su propio repositorio git. Nunca crear ni mover archivos de este proyecto dentro de `Desktop/Claude`, ni al revés.
+- Repositorio remoto (cuando el club apruebe el stack): `dama-gaztea-web` en GitHub, propio y separado de los de RIF.
+- Despliegue: proyecto propio en Cloudflare Pages, sin compartir proyecto, dominio, Workers, variables de entorno ni tokens con RIF.
+- Cuentas y servicios (Sanity, Resend, Google Sheets, Turnstile, Search Console): siempre los de Dama Gaztea. No reutilizar credenciales, `.env`, hosting (Hostinger) ni configuración de RIF.
+- Ante cualquier duda sobre qué cuenta o proyecto usar, preguntar antes de configurar o desplegar.
+
 ## Stack
 
 - Astro (salida estática) + Sanity (CMS) + Cloudflare Pages (hosting) + GitHub.

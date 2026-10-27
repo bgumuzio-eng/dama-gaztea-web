@@ -422,6 +422,7 @@ Material para la fase 1:
 
 ## 15. Notas para Claude Code
 
+- Proyecto independiente: carpeta local `Desktop/DamaGaztea`, repositorio propio `dama-gaztea-web` en GitHub y proyecto propio en Cloudflare Pages, sin compartir cuentas, credenciales ni despliegues con ningún otro proyecto.
 - Repositorio: `dama-gaztea-web`. Estructura: `/astro` (web), `/studio` (Sanity), `/scripts` (migración Blogger, lector de Sheets), `/docs` (este documento, guía del administrador).
 - Astro con salida estática; integración `@sanity/astro`; imágenes vía Sanity Image CDN con `srcset` responsive y formato AVIF/WebP.
 - Estilos con CSS propio y tokens de la sección 4 (sin frameworks pesados). Tipografías autoalojadas para rendimiento.
