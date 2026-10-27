@@ -80,6 +80,7 @@ const torneos = defineCollection({
     tipo: z.enum(['propio', 'circuito', 'externo', 'escolar']),
     perteneceAlCircuito: z.boolean().default(false),
     numeroDePrueba: z.number().optional(),
+    categorias: z.array(z.string()).default([]),
     bases: z.object({ titulo: z.string(), url: z.string() }).optional(),
     inscripcion: z.object({ tipo: z.enum(['formulario', 'externa']), url: z.string().optional() }),
     fechaLimite: z.coerce.date().optional(),

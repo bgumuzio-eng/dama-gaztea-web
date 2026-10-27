@@ -5,6 +5,7 @@ horaInicio: "10:00"
 lugar:
   centro: getxo-romo
 tipo: propio
+categorias: ["Txikis y prebenjamín", "Benjamín", "Alevín", "Infantil", "Absoluta"]
 perteneceAlCircuito: false
 bases:
   titulo: "Bases del torneo (PDF)"

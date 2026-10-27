@@ -1,0 +1,170 @@
+---
+// Cartel vertical del torneo. Hasta que el club suba su cartel (campo de imagen en Sanity),
+// se compone uno provisional con foto, tipografía de la marca y los datos de la ficha.
+import Foto from './Foto.astro';
+interface Props {
+  nombre: string;
+  fecha: Date;
+  hora: string;
+  lugar: string;
+  fechaPorConfirmar?: boolean;
+  imagen?: { src?: string; alt: string };
+}
+const {
+  nombre,
+  fecha,
+  hora,
+  lugar,
+  fechaPorConfirmar = false,
+  imagen = { src: '/img/provisionales/sala-torneo-relojes.jpg', alt: 'Tableros y relojes preparados para el torneo' },
+} = Astro.props;
+
+// "X Torneo de Ajedrez Reyes Magos" -> antetítulo "X Torneo de Ajedrez" y título "Reyes Magos"
+const corte = nombre.match(/^(.*Torneo(?: de Ajedrez)?)\s+(.+)$/);
+const [ante, titulo] = corte ? [corte[1], corte[2]] : ['', nombre];
+const zona = 'Europe/Madrid';
+const dia = new Intl.DateTimeFormat('es-ES', { day: 'numeric', timeZone: zona }).format(fecha);
+const mes = new Intl.DateTimeFormat('es-ES', { month: 'long', timeZone: zona }).format(fecha);
+const anio = new Intl.DateTimeFormat('es-ES', { year: 'numeric', timeZone: zona }).format(fecha);
+---
+
+<figure class="cartel" aria-label={`Cartel: ${nombre}`}>
+  <Foto imagen={imagen} class="cartel__foto" ancho={1000} pie={false} posicion="50% 40%" />
+  <div class="cartel__velo" aria-hidden="true"></div>
+  <div class="cartel__contenido">
+    <p class="cartel__marca"><span class="cartel__dg">DG</span> Dama Gaztea Ajedrez</p>
+    <div class="cartel__titulo">
+      {ante && <p class="cartel__ante">{ante}</p>}
+      <p class="cartel__nombre">{titulo}</p>
+    </div>
+    <div class="cartel__datos">
+      <p class="cartel__fecha">
+        <span class="cartel__dia">{dia}</span>
+        <span>
+          {mes}<br />
+          {anio}
+        </span>
+      </p>
+      {fechaPorConfirmar && <p class="cartel__confirmar">Fecha por confirmar</p>}
+      <p class="cartel__lugar">{hora} h · {lugar}</p>
+    </div>
+  </div>
+  <figcaption class="cartel__provisional">Cartel provisional</figcaption>
+</figure>
+
+<style>
+  .cartel {
+    position: relative;
+    margin: 0;
+    aspect-ratio: 3 / 4;
+    border-radius: var(--radio-foto);
+    overflow: hidden;
+    isolation: isolate;
+    color: var(--color-white);
+    box-shadow: var(--sombra-alta);
+  }
+  .cartel :global(.cartel__foto) {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+  }
+  .cartel__velo {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(to bottom, rgb(20 83 45 / 0.8) 0%, rgb(20 83 45 / 0.1) 30%, rgb(20 83 45 / 0.25) 55%, rgb(20 83 45 / 0.95) 85%);
+  }
+  .cartel__contenido {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: clamp(20px, 6%, 36px);
+    border: 1px solid rgb(212 175 55 / 0.6);
+    border-radius: var(--radio-foto);
+    margin: 10px;
+  }
+  .cartel__marca {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .cartel__dg {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 1.5px solid var(--color-gold);
+    border-radius: 50%;
+    font-family: 'Fraunces Variable', Georgia, serif;
+    font-size: 13px;
+    letter-spacing: 0;
+  }
+  .cartel__ante {
+    margin: 0 0 6px;
+    font-size: clamp(12px, 2.4vw, 14px);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-gold);
+  }
+  .cartel__nombre {
+    margin: 0;
+    font-family: var(--font-titulo);
+    font-weight: var(--titulo-peso);
+    font-size: clamp(2.4rem, 1.6rem + 3vw, 3.5rem);
+    line-height: 0.98;
+    letter-spacing: -0.02em;
+  }
+  .cartel__fecha {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 0 0 6px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    line-height: 1.3;
+  }
+  .cartel__dia {
+    font-family: var(--font-titulo);
+    font-size: clamp(3rem, 2rem + 3vw, 4rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--color-gold);
+  }
+  .cartel__confirmar {
+    display: inline-block;
+    margin: 0 0 8px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid rgb(255 255 255 / 0.8);
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .cartel__lugar {
+    margin: 0;
+    padding-top: 12px;
+    border-top: 1px solid rgb(212 175 55 / 0.5);
+    font-size: 14px;
+    color: var(--color-sobre-verde);
+  }
+  .cartel__provisional {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgb(17 24 39 / 0.55);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+</style>

@@ -1,7 +1,8 @@
 ---
 import { getCollection, getEntry, render, type CollectionEntry } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import Foto from '../../components/Foto.astro';
+import Cartel from '../../components/Cartel.astro';
+import IconoPieza from '../../components/IconoPieza.astro';
 import { fechaLarga, diaSemana, isoDia, TIPOS_TORNEO } from '../../lib/formato';
 
 export async function getStaticPaths() {
@@ -13,13 +14,16 @@ interface Props {
   torneo: CollectionEntry<'torneos'>;
 }
 const { torneo } = Astro.props;
-const { nombre, fecha, horaInicio, lugar, tipo, perteneceAlCircuito, numeroDePrueba, bases, inscripcion, fechaLimite, estado, cronica, fotos } =
-  torneo.data;
+const {
+  nombre, fecha, horaInicio, lugar, tipo, perteneceAlCircuito, numeroDePrueba, categorias, bases, inscripcion, fechaLimite,
+  fechaPorConfirmar, estado, cronica,
+} = torneo.data;
 const { Content } = await render(torneo);
 const centro = lugar.centro ? await getEntry(lugar.centro) : undefined;
 const sitio = centro ? `${centro.data.nombre}, ${centro.data.localidad}` : (lugar.texto ?? '');
 const direccion = centro?.data.direccion ?? lugar.texto ?? '';
 const plazoAbierto = estado === 'proximo' && (!fechaLimite || fechaLimite.getTime() >= Date.now() - 864e5);
+const tipoTexto = perteneceAlCircuito ? `Circuito Dama Gaztea · Prueba ${numeroDePrueba}` : TIPOS_TORNEO[tipo];
 
 const datosEstructurados = {
   '@context': 'https://schema.org',
@@ -33,100 +37,68 @@ const datosEstructurados = {
 };
 
 const despues = [
-  { titulo: 'Crónica', texto: 'El resumen del torneo con lo más destacado de cada categoría.' },
-  { titulo: 'Clasificación', texto: 'Tabla final por categorías y enlace a Chess-Results.' },
-  { titulo: 'Fotos', texto: 'Galería de la jornada y la entrega de premios.' },
-  { titulo: 'Partidas', texto: 'Las mejores partidas en un tablero reproducible.' },
-];
+  { pieza: 'dama', titulo: 'Crónica', texto: 'El resumen de la jornada con lo más destacado de cada categoría.' },
+  { pieza: 'torre', titulo: 'Clasificación', texto: 'La tabla final por categorías y el enlace a Chess-Results.' },
+  { pieza: 'peon', titulo: 'Fotos', texto: 'La galería del torneo y de la entrega de premios.' },
+  { pieza: 'caballo', titulo: 'Partidas', texto: 'Las mejores partidas en un tablero que se puede reproducir.' },
+] as const;
 ---
 
 <Base titulo={nombre} descripcion={`${nombre}. ${fechaLarga(fecha)} en ${sitio}.`}>
   <script slot="head" type="application/ld+json" set:html={JSON.stringify(datosEstructurados)} />
 
-  <header class="torneo__cabecera">
-    <div class="contenedor">
-      <nav class="migas pequeno" aria-label="Migas de pan">
-        <a href="/">Inicio</a> <span aria-hidden="true">/</span> <a href="/#torneos">Club y torneos</a>
-      </nav>
-      <p class="torneo__etiquetas">
-        <span class="etiqueta etiqueta--oro-solido">{perteneceAlCircuito ? `Circuito Dama Gaztea · Prueba ${numeroDePrueba}` : TIPOS_TORNEO[tipo]}</span>
-        <span class="etiqueta">{estado === 'proximo' ? 'Próximo' : estado === 'celebrado' ? 'Celebrado' : 'Cancelado'}</span>
-      </p>
-      <h1>{nombre}</h1>
-    </div>
+  <header class="contenedor torneo__cabecera">
+    <nav class="migas" aria-label="Migas de pan">
+      <a href="/">Inicio</a><span aria-hidden="true">/</span><a href="/#torneos">Club y torneos</a>
+    </nav>
+    <p class="etiqueta">{tipoTexto} · {estado === 'proximo' ? 'Próximo' : estado === 'celebrado' ? 'Celebrado' : 'Cancelado'}</p>
+    <h1>{nombre}</h1>
   </header>
 
-  <div class="contenedor torneo__rejilla seccion">
-    <div>
-      <dl class="torneo__datos">
+  <div class="contenedor torneo__rejilla">
+    <div class="torneo__cartel">
+      <Cartel nombre={nombre} fecha={fecha} hora={horaInicio} lugar={sitio} fechaPorConfirmar={fechaPorConfirmar} />
+    </div>
+
+    <aside class="torneo__datos" aria-label="Datos del torneo">
+      <dl>
         <div>
-          <dt>Fecha</dt>
-          <dd><time datetime={isoDia(fecha)}>{diaSemana(fecha)}, {fechaLarga(fecha)}</time></dd>
+          <dt class="rotulo">Fecha</dt>
+          <dd>
+            <time datetime={isoDia(fecha)}>{diaSemana(fecha)}, {fechaLarga(fecha)}</time>
+            {fechaPorConfirmar && <span class="confirmar">(confirmar)</span>}
+          </dd>
         </div>
         <div>
-          <dt>Hora</dt>
+          <dt class="rotulo">Hora</dt>
           <dd>{horaInicio} h</dd>
         </div>
         <div>
-          <dt>Lugar</dt>
+          <dt class="rotulo">Lugar</dt>
           <dd>
             {centro ? <a href={`/centros/${centro.id}/`}>{sitio}</a> : sitio}
-            <span class="pequeno texto-suave">{direccion}</span>
+            <span class="torneo__direccion">{direccion}</span>
           </dd>
         </div>
+        {
+          categorias.length > 0 && (
+            <div>
+              <dt class="rotulo">Categorías</dt>
+              <dd class="torneo__categorias">{categorias.join(' · ')}</dd>
+            </div>
+          )
+        }
       </dl>
-
-      <div class="prosa torneo__descripcion">
-        <Content />
-      </div>
-
-      {
-        estado === 'celebrado' && cronica ? (
-          <section>
-            <h2 class="titulo-dorado">Crónica</h2>
-            <p>{cronica}</p>
-          </section>
-        ) : (
-          <section class="torneo__despues">
-            <h2 class="titulo-dorado">Después del torneo</h2>
-            <p class="texto-suave">Cuando se celebre, en esta misma página aparecerán:</p>
-            <ul>
-              {despues.map((d) => (
-                <li>
-                  <strong>{d.titulo}</strong>
-                  <span class="pequeno texto-suave">{d.texto}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )
-      }
-
-      {
-        fotos.length > 0 && (
-          <ul class="torneo__fotos">
-            {fotos.map((f) => (
-              <li>
-                <Foto imagen={f} proporcion="4 / 3" pieza="torre" />
-              </li>
-            ))}
-          </ul>
-        )
-      }
-    </div>
-
-    <aside class="torneo__lateral">
-      <div class="tarjeta torneo__inscripcion">
-        <h2>Inscripción</h2>
+      <div class="torneo__inscripcion">
         {
           plazoAbierto ? (
             <>
-              {fechaLimite && <p class="etiqueta etiqueta--alerta">Plazo hasta el {fechaLarga(fechaLimite)}</p>}
-              <p class="pequeno texto-suave">
-                {inscripcion.tipo === 'formulario'
-                  ? 'Rellena el formulario y recibirás la confirmación por correo.'
-                  : 'La inscripción se hace en la web del organizador.'}
-              </p>
+              {fechaLimite && (
+                <p class="torneo__plazo">
+                  <span class="etiqueta etiqueta--alerta">Inscripción hasta el {fechaLarga(fechaLimite).replace(/ de \d{4}$/, '')}</span>
+                  {fechaPorConfirmar && <span class="confirmar">(confirmar)</span>}
+                </p>
+              )}
               <a
                 href={inscripcion.tipo === 'formulario' ? '/#contacto' : inscripcion.url}
                 class="boton torneo__boton"
@@ -141,136 +113,201 @@ const despues = [
         }
         {
           bases && (
-            <a href={bases.url} class="boton boton--secundario torneo__boton">
+            <a href={bases.url} class="enlace-flecha torneo__bases">
               {bases.titulo}
             </a>
           )
         }
       </div>
+    </aside>
+
+    <div class="torneo__texto">
+      <div class="prosa">
+        <Content />
+      </div>
       {
-        perteneceAlCircuito && (
-          <div class="torneo__circuito">
-            <p class="antetitulo">Circuito Dama Gaztea</p>
-            <p class="pequeno">
-              Esta prueba suma puntos para la clasificación acumulada de la temporada. La clasificación se publicará en la web
-              en la fase 2, leída directamente de la hoja de Google del circuito.
-            </p>
-          </div>
+        estado === 'celebrado' && cronica && (
+          <section>
+            <h2 class="titulo-dorado">Crónica</h2>
+            <p>{cronica}</p>
+          </section>
         )
       }
-    </aside>
+    </div>
   </div>
+
+  {
+    estado !== 'celebrado' && (
+      <section class="seccion seccion--crema despues">
+        <div class="contenedor">
+          <div class="seccion__cabecera">
+            <div>
+              <h2 class="titulo-dorado">Después del torneo</h2>
+              <p class="seccion__intro">Cuando se celebre, en esta misma página aparecerán:</p>
+            </div>
+          </div>
+          <ul class="despues__lista">
+            {despues.map((d) => (
+              <li>
+                <IconoPieza pieza={d.pieza} tamano={34} class="despues__icono" />
+                <h3>{d.titulo}</h3>
+                <p class="texto-suave">{d.texto}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
 </Base>
 
 <style>
   .torneo__cabecera {
-    background: var(--color-primary) var(--patron-tablero-claro);
-    color: var(--color-white);
-    padding-block: 28px 40px;
+    padding-top: 40px;
+    padding-bottom: 40px;
   }
-  .torneo__cabecera h1 {
-    color: var(--color-white);
-    margin: 0;
-    max-width: 24ch;
+  @media (min-width: 960px) {
+    .torneo__cabecera {
+      padding-top: 56px;
+      padding-bottom: 48px;
+    }
   }
   .migas {
-    margin-bottom: 20px;
-  }
-  .migas a {
-    color: var(--color-muted);
-  }
-  .torneo__etiquetas {
     display: flex;
     gap: 8px;
-    flex-wrap: wrap;
+    margin-bottom: 28px;
+    font-size: 14px;
+    color: var(--color-text-soft);
   }
+  .migas a {
+    color: var(--color-text-soft);
+  }
+  .etiqueta {
+    margin: 0 0 14px;
+  }
+  .torneo__cabecera h1 {
+    max-width: 20ch;
+    font-size: clamp(2rem, 1.4rem + 2.6vw, 3.25rem);
+    margin: 0;
+  }
+
+  /* Cartel y texto a la izquierda; datos clave en una columna fija a la derecha */
   .torneo__rejilla {
     display: grid;
     gap: 40px;
     grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'cartel' 'datos' 'texto';
+    padding-bottom: var(--separacion);
   }
   @media (min-width: 960px) {
     .torneo__rejilla {
-      grid-template-columns: minmax(0, 1fr) 360px;
-      gap: 56px;
+      grid-template-columns: minmax(0, 1fr) 380px;
+      grid-template-areas: 'cartel datos' 'texto datos';
+      column-gap: 80px;
+      row-gap: 56px;
       align-items: start;
     }
-    .torneo__lateral {
+    .torneo__datos {
       position: sticky;
-      top: 100px;
+      top: 88px;
     }
   }
+  .torneo__cartel {
+    grid-area: cartel;
+    max-width: 520px;
+  }
   .torneo__datos {
-    display: grid;
-    gap: 12px;
-    margin: 0 0 32px;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-area: datos;
+    padding: 28px;
+    border-radius: var(--radio-foto);
+    background: var(--color-crema);
+    border-top: 1px solid var(--color-gold);
   }
-  .torneo__datos div {
-    padding: 14px 16px;
-    border-radius: var(--radio);
-    background: var(--color-surface);
-    border-left: 3px solid var(--color-gold);
+  .torneo__texto {
+    grid-area: texto;
   }
-  .torneo__datos dt {
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--color-accent);
+  .torneo__datos dl {
+    margin: 0;
+  }
+  .torneo__datos dl > div {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--color-borde);
+  }
+  .torneo__datos dl > div:first-child {
+    padding-top: 0;
+  }
+  .torneo__datos .rotulo {
+    margin-bottom: 4px;
   }
   .torneo__datos dd {
-    margin: 4px 0 0;
+    margin: 0;
     font-weight: 600;
     color: var(--color-primary);
   }
-  .torneo__datos dd span {
+  .torneo__datos dd a {
+    color: var(--color-primary);
+  }
+  .torneo__datos dd :global(time)::first-letter {
+    text-transform: uppercase;
+  }
+  .torneo__direccion {
     display: block;
     font-weight: 400;
+    font-size: 15px;
+    color: var(--color-text-soft);
   }
-  .torneo__descripcion {
-    margin-bottom: 40px;
-  }
-  .torneo__despues ul {
-    list-style: none;
-    padding: 0;
-    display: grid;
-    gap: 10px;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  }
-  .torneo__despues li {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 16px;
-    border: 1px dashed var(--color-borde);
-    border-radius: var(--radio);
+  .torneo__categorias {
+    font-weight: 500 !important;
+    font-size: 15px;
   }
   .torneo__inscripcion {
-    padding: 24px;
-    border-top: 3px solid var(--color-gold);
-    margin-bottom: 20px;
+    padding-top: 22px;
   }
-  .torneo__inscripcion h2 {
-    font-size: 1.4rem;
+  .torneo__plazo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 14px;
   }
   .torneo__boton {
     width: 100%;
-    margin-top: 10px;
   }
-  .torneo__circuito {
-    padding: 20px;
-    border-radius: var(--radio);
-    background: var(--color-surface);
+  .torneo__bases {
+    margin-top: 18px;
   }
-  .torneo__circuito p:last-child {
-    margin: 0;
-  }
-  .torneo__fotos {
-    list-style: none;
-    padding: 0;
+
+  .despues__lista {
     display: grid;
-    gap: 8px;
-    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  @media (min-width: 640px) {
+    .despues__lista {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 1000px) {
+    .despues__lista {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  .despues__lista li {
+    padding-top: 20px;
+    border-top: 1px solid var(--color-borde);
+  }
+  .despues :global(.despues__icono) {
+    color: var(--color-gold);
+    margin-bottom: 14px;
+  }
+  .despues__lista h3 {
+    font-size: 1.35rem;
+    margin-bottom: 6px;
+  }
+  .despues__lista p {
+    margin: 0;
+    font-size: 15px;
   }
 </style>

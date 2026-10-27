@@ -433,6 +433,7 @@ img {
 }
 
 .confirmar {
+  margin-left: 0.3em;
   font-size: 0.85em;
   font-weight: 500;
   color: var(--color-alert);
