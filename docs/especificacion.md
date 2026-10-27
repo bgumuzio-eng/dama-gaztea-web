@@ -69,6 +69,8 @@ En sencillo:
 | Guardado de solicitudes | Google Sheets privado, vía Cloudflare Worker |
 | Clasificación del circuito | Google Sheets leído por la web |
 | Partidas reproducibles | Lichess embed (PGN) |
+| Problemas interactivos | chess.js (reglas) + chessground (tablero), en el navegador |
+| Base de problemas inicial | Base abierta de problemas de Lichess (CC0) |
 | Diagramas de posiciones | Generados desde FEN |
 | Mapas | Google Maps embed |
 | Vídeos | YouTube embed |
@@ -178,8 +180,10 @@ Menú principal (6 entradas): **Academia · Centros y horarios · Club y torneos
 
 - Biblioteca de vídeos por tema: aperturas, táctica y combinaciones, problemas de mate, finales, estrategia, partidas históricas, análisis, trucos y curiosidades, clases, partidas de torneos.
 - Cada vídeo: título, YouTube, explicación, diagrama opcional de la posición (FEN), solución desplegable.
-- Problema de la semana: posición, enunciado, solución desplegable, archivo de problemas anteriores.
+- Problemas: tablero interactivo donde el visitante resuelve problemas de táctica por niveles y temas (ver sección 9).
+- Problema de la semana: un problema destacado del profesor, resuelto en el mismo tablero interactivo, con archivo de problemas anteriores.
 - Partidas: tablero reproducible de Lichess desde PGN.
+- Jugar online contra otras personas: no se hace en la web; se enlaza al equipo del club en Lichess.
 
 ### 5.7 Contacto
 
@@ -255,11 +259,18 @@ Un tipo de documento por pestaña del panel. Solo los campos necesarios.
 - fecha
 
 ### `problema`
-- fecha (semana)
-- posicionFEN
+- titulo (opcional, para los propios)
+- posicionFEN (posición en la que le toca mover al visitante)
 - enunciado ("Juegan blancas y ganan")
-- solucion (texto y jugadas)
-- dificultad (1 a 3)
+- solucionJugadas (lista de jugadas en SAN, alternando visitante y respuesta forzada; la primera es del visitante)
+- solucion (texto explicativo, opcional)
+- nivel (facil / medio / dificil)
+- tema (varios, lista controlada: mate en 1, mate en 2, clavada, horquilla, ataque doble, descubierta, desviación, sacrificio, finales...)
+- origen (propio / lichess)
+- idLichess (opcional, solo si origen = lichess)
+- puntuacionLichess (opcional, para reasignar nivel si cambian los rangos)
+- destacadoSemana (fecha de la semana, opcional; solo problemas propios)
+- publicado (sí/no)
 
 ### `pagina`
 - titulo, slug, cuerpo (texto enriquecido), imagenCabecera, mostrarEnMenu, orden, publicada
@@ -287,6 +298,8 @@ Reglas:
 
 **Crear un torneo:** Torneos › Nuevo › datos y bases › Publicar. Aparece en portada y calendario. Tras el torneo: abrir la misma ficha, añadir crónica, clasificación, fotos y PGN; cambiar estado a Celebrado.
 
+**Crear un problema:** Problemas › Nuevo › colocar la posición en el editor de tablero (o pegar FEN) › escribir la solución › nivel y tema › Publicar. Para el problema de la semana: rellenar "destacado semana".
+
 **Actualizar el circuito:** editar la hoja de Google Sheets. La web la lee automáticamente (ver sección 8).
 
 **Cambiar teléfono, redes o eslogan:** Ajustes › editar › Publicar. Cambia en toda la web.
@@ -309,25 +322,69 @@ Fase 3: ranking automático calculado por la propia web a partir de las clasific
 
 ---
 
-## 9. Formularios, privacidad y pagos
+## 9. Problemas interactivos
 
-### 9.1 Formulario de información
+Base de datos de problemas de táctica que el visitante resuelve en un tablero interactivo dentro de la web. Fase 2, justo después del circuito.
+
+### 9.1 Funcionamiento
+
+- El visitante mueve las piezas (arrastrar o tocar origen y destino, cómodo en móvil). La web valida cada jugada contra la solución; si es correcta, responde sola con la jugada forzada del rival y espera la siguiente.
+- Jugada incorrecta: aviso y la pieza vuelve a su casilla; se puede reintentar.
+- Pista: ilumina la pieza que hay que mover.
+- Ver solución: reproduce la línea completa con el texto explicativo, si existe.
+- Contador de aciertos y racha actual y mejor racha. Un problema cuenta como acierto solo si se resuelve sin pista ni solución.
+- Sin registro: el progreso (resueltos, aciertos, rachas) se guarda en el navegador con localStorage. Si el navegador lo borra, se empieza de cero sin errores.
+- Botón "Siguiente problema" que elige uno no resuelto del nivel y tema seleccionados.
+
+### 9.2 Niveles y temas
+
+- Tres niveles: fácil, medio, difícil.
+- Filtro opcional por tema: mate en 1, mate en 2, clavada, horquilla, ataque doble, descubierta, desviación, sacrificio, finales y otros de la lista controlada.
+
+### 9.3 Fuentes
+
+1. **Problemas propios del profesor:** creados en el panel con editor de tablero o pegando FEN. Llevan el distintivo "De las clases de Dama Gaztea".
+2. **Base abierta de Lichess (licencia CC0):** importación inicial por script (`/scripts`) de unos cientos de problemas por nivel, seleccionados por puntuación (orientativo: fácil hasta 1200, medio 1200 a 1800, difícil desde 1800) y por popularidad y número de partidas jugadas, para quedarse con los más fiables. El formato de Lichess da la posición antes de la jugada del rival y las jugadas en UCI: el script aplica la primera jugada, guarda la FEN resultante y convierte el resto a SAN con chess.js. Se cita la fuente en la página.
+
+### 9.4 Problema de la semana
+
+Deja de ser una ficha estática: es un problema propio del profesor marcado como destacado de la semana, resuelto en el mismo tablero. Aparece en portada y en Aprende, con archivo de semanas anteriores.
+
+### 9.5 Tecnología
+
+- chess.js para las reglas y la validación de jugadas.
+- chessground (el tablero de Lichess) para la interfaz, con los colores de la paleta.
+- Stockfish en el navegador (WebAssembly) solo si más adelante se añade "jugar contra la máquina".
+- Todo en cliente, sin servidor: los problemas se generan como JSON estático en build.
+- Licencias: chess.js es BSD-2 (sin condiciones relevantes). chessground es GPL-3.0: al servirse al navegador, el código de la web que lo incluye debe poder ofrecerse bajo GPL (lo más sencillo es que el repositorio sea público). Si no se quiere publicar el código, alternativa con licencia MIT: cm-chessboard. Decidir antes de lanzar la fase 2.
+- Los problemas de Lichess se guardan como ficheros JSON en el repositorio (no en Sanity) para no gastar documentos del plan gratuito; los propios viven en Sanity.
+
+### 9.6 Fuera de alcance
+
+- Cuenta de alumno para guardar el progreso entre dispositivos: fase 3.
+- Jugar online contra otras personas: descartado. Se enlaza un equipo del club en Lichess.
+
+---
+
+## 10. Formularios, privacidad y pagos
+
+### 10.1 Formulario de información
 Campos: nombre, correo, teléfono, localidad de interés, mensaje, aceptación de privacidad. Protección anti-spam invisible (Turnstile). Al enviar: correo al administrador, fila en hoja de Google privada, y aviso opcional por WhatsApp. Respuesta automática de confirmación a la familia.
 
-### 9.2 Botón de WhatsApp
+### 10.2 Botón de WhatsApp
 Enlace `wa.me` con mensaje prerrellenado. Desde una ficha de centro, el mensaje incluye el nombre del centro.
 
-### 9.3 Preinscripción online (fase 2)
+### 10.3 Preinscripción online (fase 2)
 Dos pasos:
 1. Tutor: nombre y apellidos, DNI, correo, teléfono, relación con el alumno.
 2. Alumno: nombre, fecha de nacimiento, centro y grupo deseado, nivel, observaciones.
 
 Casillas separadas: política de privacidad, consentimiento del tratamiento de datos del menor, autorización de imagen (opcional). Se guarda cifrado en hoja privada, aviso al administrador, confirmación a la familia. Nada se publica.
 
-### 9.4 Privacidad de menores
+### 10.4 Privacidad de menores
 Revisión de los textos legales actuales para incluir: responsable del tratamiento, finalidades y base legal, consentimiento parental (obligatorio por debajo de 14 años), cláusula de imagen, plazo de conservación, derechos y forma de ejercerlos. Principio de minimización: solo se pide lo necesario. Sin comentarios públicos en la web.
 
-### 9.5 Pagos online (fase 3)
+### 10.5 Pagos online (fase 3)
 
 | Opción | Permite | Coste | Nota |
 | --- | --- | --- | --- |
@@ -339,7 +396,7 @@ Recomendación: empezar con transferencia o Bizum manual; Stripe cuando la prein
 
 ---
 
-## 10. Migración desde Blogger
+## 11. Migración desde Blogger
 
 1. Exportar el blog (XML) y descargar todas las fotos. Es la copia de seguridad.
 2. Inventario: lista de publicaciones con título, fecha, etiquetas y visitas para marcar conservar / agrupar / descartar.
@@ -353,7 +410,7 @@ Recomendación: empezar con transferencia o Bizum manual; Stripe cuando la prein
 
 ---
 
-## 11. Idiomas, redes, WhatsApp y medición
+## 12. Idiomas, redes, WhatsApp y medición
 
 - **Traducción:** selector GTranslate (Google Translate) que traduce toda la web al vuelo. Calidad suficiente para orientarse. Preparado para una futura versión en euskera de las páginas fijas en `/eu/`.
 - **Redes:** enlaces a Instagram, TikTok y YouTube en cabecera y pie. YouTube se incrusta; Instagram y TikTok se enlazan (incrustar sus feeds exige herramientas de pago o permisos inestables).
@@ -365,7 +422,7 @@ Recomendación: empezar con transferencia o Bizum manual; Stripe cuando la prein
 
 ---
 
-## 12. Costes
+## 13. Costes
 
 | Partida | Coste anual | Fase |
 | --- | --- | --- |
@@ -377,6 +434,7 @@ Recomendación: empezar con transferencia o Bizum manual; Stripe cuando la prein
 | GTranslate | 0 € | 1 |
 | Search Console, Analytics, Business Profile | 0 € | 1 |
 | Correo profesional (Cloudflare + Gmail) | 0 € (Workspace opcional: unos 84 €) | 1 |
+| Problemas interactivos (chess.js, chessground, base Lichess CC0) | 0 € | 2 |
 | Stripe | Sin cuota; 1,5 % + 0,25 € por cobro | 3 |
 | Fotografía profesional (opcional, recomendable) | 150 a 300 € una vez | 1 |
 
@@ -384,18 +442,18 @@ Desarrollo: tiempo de Borja con Claude Code, sin coste monetario.
 
 ---
 
-## 13. Fases
+## 14. Fases
 
 | Fase | Contenido | Duración |
 | --- | --- | --- |
 | 0. Validación | Aprobar propuesta, decisiones del club, maqueta visual (portada, noticia, centro, torneo en móvil y escritorio), accesos a Blogger y dominio | 1 semana |
 | 1. Lanzamiento | Portada, Academia, Centros, Club y torneos, Noticias, Aprende (vídeos y problema), Contacto, legal, migración, redirecciones, Search Console, panel, formación | 3 a 4 semanas |
-| 2. Circuito e inscripciones | Clasificación desde Sheets, preinscripción con consentimientos, tarifas (si procede), página de colegios, galería ampliada, lista o canal de WhatsApp | 2 semanas |
-| 3. Avanzado | Pagos online, área privada de familias, tablero interactivo de ejercicios, biblioteca de ejercicios, histórico de competiciones, euskera en páginas fijas, ranking automático | Según necesidad |
+| 2. Circuito, problemas e inscripciones | Clasificación desde Sheets, problemas interactivos (sección 9) con importación de Lichess, preinscripción con consentimientos, tarifas (si procede), página de colegios, galería ampliada, lista o canal de WhatsApp | 3 semanas |
+| 3. Avanzado | Pagos online, área privada de familias, cuenta de alumno con progreso de problemas entre dispositivos, jugar contra la máquina (opcional), histórico de competiciones, euskera en páginas fijas, ranking automático | Según necesidad |
 
 ---
 
-## 14. Decisiones pendientes y material necesario
+## 15. Decisiones pendientes y material necesario
 
 Decisiones del club antes de empezar:
 
@@ -420,15 +478,16 @@ Material para la fase 1:
 
 ---
 
-## 15. Notas para Claude Code
+## 16. Notas para Claude Code
 
 - Proyecto independiente: carpeta local `Desktop/DamaGaztea`, repositorio propio `dama-gaztea-web` en GitHub y proyecto propio en Cloudflare Pages, sin compartir cuentas, credenciales ni despliegues con ningún otro proyecto.
 - Repositorio: `dama-gaztea-web`. Estructura: `/astro` (web), `/studio` (Sanity), `/scripts` (migración Blogger, lector de Sheets), `/docs` (este documento, guía del administrador).
 - Astro con salida estática; integración `@sanity/astro`; imágenes vía Sanity Image CDN con `srcset` responsive y formato AVIF/WebP.
 - Estilos con CSS propio y tokens de la sección 4 (sin frameworks pesados). Tipografías autoalojadas para rendimiento.
-- Componentes clave: `Hero`, `NoticiaCard`, `CentroCard`, `TorneoCard`, `Mapa`, `TableroFEN`, `LichessEmbed`, `Clasificacion`, `FormularioContacto`, `BotonWhatsApp`, `ShareButtons`, `Faq`.
+- Componentes clave: `Hero`, `NoticiaCard`, `CentroCard`, `TorneoCard`, `Mapa`, `TableroFEN`, `TableroProblema`, `LichessEmbed`, `Clasificacion`, `FormularioContacto`, `BotonWhatsApp`, `ShareButtons`, `Faq`.
 - Formularios: endpoint en Cloudflare Worker (validación, Turnstile, Resend, Google Sheets API).
 - Circuito: fetch del CSV publicado de Google Sheets en build; webhook de Sanity y botón manual para redeploy.
+- Problemas: chess.js + chessground en una isla de cliente; problemas como JSON estático; progreso en localStorage; script de importación de la base CC0 de Lichess en `/scripts`.
 - Redirecciones: fichero `_redirects` generado por el script de migración.
 - SEO: `sitemap.xml`, `robots.txt`, Open Graph por página, datos estructurados `LocalBusiness` en centros y `Event` en torneos, `hreflang` preparado para `/eu/`.
 - Accesibilidad: contraste AA, navegación por teclado, textos alternativos obligatorios.

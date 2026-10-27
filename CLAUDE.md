@@ -21,6 +21,15 @@ Este proyecto no tiene ninguna relación con los proyectos de RIF (web de RIF, r
 - Formularios: Cloudflare Worker (validación, Turnstile, Resend, Google Sheets API).
 - Circuito: CSV publicado de Google Sheets leído en build; webhook de Sanity y botón manual para redeploy.
 
+## Problemas interactivos (fase 2, sección 9 de la especificación)
+
+- Tablero interactivo en cliente: chess.js (reglas) + chessground (tablero). Sin servidor. Stockfish solo si se añade "jugar contra la máquina".
+- El visitante mueve; se valida cada jugada contra `solucionJugadas` (SAN) y la web responde con la jugada del rival. Pista (iluminar pieza), ver solución, aciertos y rachas en localStorage, sin registro.
+- Niveles `facil` / `medio` / `dificil`; filtro por tema.
+- Origen `propio` (panel, distintivo "De las clases de Dama Gaztea") o `lichess` (importación CC0 por script, JSON en el repo, convertir UCI a SAN y aplicar la primera jugada del rival).
+- El problema de la semana es un problema propio destacado en el mismo tablero.
+- Fuera de alcance: cuenta de alumno (fase 3); jugar online contra personas (descartado, se enlaza el equipo del club en Lichess).
+
 ## Estructura del repositorio
 
 - `/astro` web
