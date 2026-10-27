@@ -75,6 +75,7 @@ const torneos = defineCollection({
     fecha: z.coerce.date(),
     horaInicio: z.string(),
     fechaFin: z.coerce.date().optional(),
+    fechaPorConfirmar: z.boolean().default(false),
     lugar: z.object({ texto: z.string().optional(), centro: reference('centros').optional() }),
     tipo: z.enum(['propio', 'circuito', 'externo', 'escolar']),
     perteneceAlCircuito: z.boolean().default(false),

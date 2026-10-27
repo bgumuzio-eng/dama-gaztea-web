@@ -1,0 +1,19 @@
+{
+  "nombre": "Las Arenas",
+  "localidad": "Getxo",
+  "tipo": "otro",
+  "direccion": "Las Arenas, Getxo (dirección exacta por confirmar)",
+  "ubicacion": { "lat": 43.3237, "lng": -3.0136 },
+  "descripcion": "Dos grupos los martes por la tarde en Las Arenas, uno a la salida del colegio y otro a última hora.",
+  "grupos": [
+    { "nivel": "Primer grupo", "diaSemana": "Martes", "horaInicio": "16:30", "horaFin": "18:00", "edades": "(confirmar)" },
+    { "nivel": "Segundo grupo", "diaSemana": "Martes", "horaInicio": "18:00", "horaFin": "19:25", "edades": "(confirmar)" }
+  ],
+  "mostrarPlazas": false,
+  "fotos": [
+    { "src": "/img/provisionales/nina-jugando.jpg", "alt": "Alumna pensando su jugada" },
+    { "src": "/img/provisionales/piezas-madera-desenfoque.jpg", "alt": "Piezas de madera en el tablero" }
+  ],
+  "activo": true,
+  "orden": 2
+}

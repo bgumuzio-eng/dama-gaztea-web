@@ -1,6 +1,5 @@
 ---
-// Mapa esquemático de la ría con los centros. En la web final puede sustituirse por un mapa real
-// (Google Maps o OpenStreetMap) si se quiere zoom; este no carga nada externo ni cookies.
+// Mapa esquemático de la ría con marcadores dorados sobre crema. No carga nada externo ni cookies.
 import type { CollectionEntry } from 'astro:content';
 interface Props {
   centros: CollectionEntry<'centros'>[];
@@ -8,40 +7,50 @@ interface Props {
 }
 const { centros, destacado } = Astro.props;
 
-const caja = { oeste: -3.08, este: -2.88, norte: 43.385, sur: 43.235 };
-const ancho = 400;
-const alto = 300;
+const caja = { oeste: -3.075, este: -2.895, norte: 43.372, sur: 43.242 };
+const ancho = 480;
+const alto = 360;
 const x = (lng: number) => ((lng - caja.oeste) / (caja.este - caja.oeste)) * ancho;
 const y = (lat: number) => ((caja.norte - lat) / (caja.norte - caja.sur)) * alto;
-const punto = (lat: number, lng: number) => `${x(lng).toFixed(1)},${y(lat).toFixed(1)}`;
+const p = (lat: number, lng: number) => `${x(lng).toFixed(1)},${y(lat).toFixed(1)}`;
 
-// Trazado aproximado de la costa y la ría del Nervión
-const mar = `M0,0 L${ancho},0 L${ancho},${y(43.372).toFixed(1)} C${x(-2.96)},${y(43.375)} ${x(-2.99)},${y(43.365)} ${x(-3.0)},${y(43.352)} L${x(-3.03)},${y(43.338)} C${x(-3.05)},${y(43.34)} ${x(-3.07)},${y(43.345)} 0,${y(43.35)} Z`;
+// Costa y ría del Nervión, trazado aproximado
+const mar = `M0,0 L${ancho},0 L${ancho},${y(43.366).toFixed(1)} C${x(-2.97)},${y(43.37)} ${x(-2.995)},${y(43.36)} ${x(-3.005)},${y(43.345)} L${x(-3.025)},${y(43.333)} C${x(-3.045)},${y(43.336)} ${x(-3.065)},${y(43.342)} 0,${y(43.346)} Z`;
 const ria = [
-  [43.345, -3.017], [43.33, -3.012], [43.315, -3.004], [43.302, -2.99], [43.29, -2.975], [43.28, -2.96],
-  [43.268, -2.945], [43.262, -2.928], [43.255, -2.915],
-].map(([la, ln]) => punto(la, ln)).join(' ');
+  [43.338, -3.02], [43.325, -3.014], [43.313, -3.004], [43.302, -2.99], [43.29, -2.975], [43.28, -2.96],
+  [43.269, -2.946], [43.262, -2.93], [43.255, -2.912],
+].map(([la, ln]) => p(la, ln)).join(' ');
+
+// Una etiqueta por localidad, junto a su primer centro
+const etiquetas = [...new Map(centros.map((c) => [c.data.localidad, c])).values()];
 ---
 
 <figure class="mapa">
   <svg viewBox={`0 0 ${ancho} ${alto}`} role="img" aria-labelledby="mapa-titulo">
     <title id="mapa-titulo">Mapa esquemático de los centros de Dama Gaztea en la ría de Bilbao</title>
-    <rect width={ancho} height={alto} fill="#F3F8F4"></rect>
-    <path d={mar} fill="#cfe3d4"></path>
-    <polyline points={ria} fill="none" stroke="#cfe3d4" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"></polyline>
-    <text x="24" y="34" class="mapa__mar">Mar Cantábrico</text>
+    <rect width={ancho} height={alto} fill="#F7F4EC"></rect>
+    <path d={mar} fill="#ECE5D3"></path>
+    <polyline points={ria} fill="none" stroke="#ECE5D3" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></polyline>
+    <text x="28" y="40" class="mapa__mar">Mar Cantábrico</text>
+    <text x={x(-2.985)} y={y(43.297)} class="mapa__ria" transform={`rotate(38 ${x(-2.985)} ${y(43.297)})`}>Ría de Bilbao</text>
     {
-      centros.map((c) => {
+      etiquetas.map((c) => {
+        const izquierda = c.data.localidad !== 'Bilbao';
         const cx = x(c.data.ubicacion.lng);
         const cy = y(c.data.ubicacion.lat);
-        const activo = c.id === destacado;
-        const izquierda = c.data.localidad !== 'Bilbao';
         return (
-          <a href={`/centros/${c.id}/`} class="mapa__punto">
-            <circle cx={cx} cy={cy} r={activo ? 13 : 10} fill={activo ? '#D4AF37' : '#14532D'} stroke="#D4AF37" stroke-width="3" />
-            <text x={izquierda ? cx - 18 : cx + 18} y={cy + 5} text-anchor={izquierda ? 'end' : 'start'} class="mapa__nombre">
-              {c.data.localidad}
-            </text>
+          <text x={izquierda ? cx - 20 : cx + 20} y={cy + 5} text-anchor={izquierda ? 'end' : 'start'} class="mapa__nombre">
+            {c.data.localidad}
+          </text>
+        );
+      })
+    }
+    {
+      centros.map((c) => {
+        const activo = c.id === destacado;
+        return (
+          <a href={`/centros/${c.id}/`} class="mapa__punto" aria-label={`${c.data.nombre}, ${c.data.localidad}`}>
+            <circle cx={x(c.data.ubicacion.lng)} cy={y(c.data.ubicacion.lat)} r={activo ? 10 : 8} class:list={['mapa__marca', { activo }]} />
           </a>
         );
       })
@@ -52,30 +61,41 @@ const ria = [
 <style>
   .mapa {
     margin: 0;
-    border-radius: var(--radio);
+    border-radius: var(--radio-foto);
     overflow: hidden;
-    box-shadow: var(--sombra);
-    background: var(--color-surface);
+    border: 1px solid var(--color-borde);
   }
   svg {
     display: block;
     width: 100%;
     height: auto;
   }
-  .mapa__mar {
-    font: italic 13px var(--font-titulo);
-    fill: #2e7d32;
-    opacity: 0.7;
+  .mapa__mar,
+  .mapa__ria {
+    font: italic 14px 'Fraunces Variable', Georgia, serif;
+    fill: #8a7f66;
+  }
+  .mapa__ria {
+    font-size: 12px;
   }
   .mapa__nombre {
-    font: 600 16px var(--font-texto);
+    font: 600 15px 'Inter Variable', system-ui, sans-serif;
+    letter-spacing: 0.02em;
     fill: #14532d;
-    paint-order: stroke;
-    stroke: #f3f8f4;
-    stroke-width: 4px;
   }
-  .mapa__punto:hover circle,
-  .mapa__punto:focus-visible circle {
+  .mapa__marca {
     fill: #d4af37;
+    stroke: #ffffff;
+    stroke-width: 3;
+    transition: r 200ms ease, fill 200ms ease;
+  }
+  .mapa__marca.activo {
+    fill: #14532d;
+    stroke: #d4af37;
+  }
+  .mapa__punto:hover .mapa__marca,
+  .mapa__punto:focus-visible .mapa__marca {
+    fill: #14532d;
+    stroke: #d4af37;
   }
 </style>

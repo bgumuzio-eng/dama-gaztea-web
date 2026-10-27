@@ -1,14 +1,14 @@
 ---
-// Logotipo tipográfico provisional hasta que llegue el logo definitivo.
-import { PIEZAS } from '../lib/formato';
+// Logotipo provisional (apartado 9 de la dirección de diseño): monograma DG en círculo dorado.
 interface Props {
   eslogan?: boolean;
+  tono?: 'claro' | 'oscuro';
 }
-const { eslogan = false } = Astro.props;
+const { eslogan = false, tono = 'claro' } = Astro.props;
 ---
 
-<a href="/" class="logo" aria-label="Dama Gaztea Ajedrez, inicio">
-  <span class="logo__marca pieza" aria-hidden="true">{PIEZAS.dama}</span>
+<a href="/" class:list={['logo', `logo--${tono}`]} aria-label="Dama Gaztea Ajedrez, inicio">
+  <span class="logo__monograma" aria-hidden="true">DG</span>
   <span class="logo__texto">
     <span class="logo__nombre">DAMA GAZTEA</span>
     <span class="logo__sub">AJEDREZ</span>
@@ -21,23 +21,28 @@ const { eslogan = false } = Astro.props;
     display: inline-flex;
     align-items: center;
     gap: 12px;
-    color: var(--color-white);
     text-decoration: none;
+    color: var(--color-white);
+  }
+  .logo--oscuro {
+    color: var(--color-primary);
   }
   .logo:hover {
-    color: var(--color-white);
+    color: inherit;
   }
-  .logo__marca {
+  .logo__monograma {
     display: grid;
     place-items: center;
-    width: 44px;
-    height: 44px;
+    width: 46px;
+    height: 46px;
     flex: none;
-    border: 2px solid var(--color-gold);
-    border-radius: 6px;
-    color: var(--color-gold);
-    font-size: 26px;
-    background: var(--patron-tablero-claro);
+    border: 1.5px solid var(--color-gold);
+    border-radius: 50%;
+    font-family: 'Fraunces Variable', Georgia, serif;
+    font-weight: 600;
+    font-size: 19px;
+    letter-spacing: -0.02em;
+    font-optical-sizing: auto;
   }
   .logo__texto {
     display: flex;
@@ -45,22 +50,25 @@ const { eslogan = false } = Astro.props;
     line-height: 1;
   }
   .logo__nombre {
-    font-family: var(--font-titulo);
-    font-weight: var(--titulo-peso);
-    font-size: 1.25rem;
-    letter-spacing: 0.06em;
+    font-family: 'Inter Variable', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.12em;
   }
   .logo__sub {
-    margin-top: 4px;
-    font-size: 0.68rem;
-    font-weight: 600;
-    letter-spacing: 0.42em;
-    color: var(--color-gold);
+    margin-top: 5px;
+    font-family: 'Inter Variable', system-ui, sans-serif;
+    font-weight: 400;
+    font-size: 11px;
+    letter-spacing: 0.32em;
+    opacity: 0.85;
   }
   .logo__eslogan {
-    margin-top: 8px;
-    font-size: 0.8rem;
-    color: var(--color-muted);
-    letter-spacing: 0.01em;
+    margin-top: 12px;
+    font-family: var(--font-titulo);
+    font-style: italic;
+    font-size: 15px;
+    letter-spacing: 0;
+    opacity: 0.9;
   }
 </style>

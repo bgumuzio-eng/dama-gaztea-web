@@ -1,0 +1,18 @@
+{
+  "nombre": "Bar Palas",
+  "localidad": "Sestao",
+  "tipo": "otro",
+  "direccion": "Sestao (dirección exacta por confirmar)",
+  "ubicacion": { "lat": 43.3095, "lng": -3.0068 },
+  "descripcion": "Clase semanal en la Margen Izquierda, en el mismo local que acoge el Torneo Blitz Gran Palas.",
+  "grupos": [
+    { "nivel": "Grupo de miércoles", "diaSemana": "Miércoles", "horaInicio": "18:00", "horaFin": "19:25", "edades": "(confirmar)" }
+  ],
+  "mostrarPlazas": false,
+  "fotos": [
+    { "src": "/img/provisionales/grupo-jovenes.jpg", "alt": "Jóvenes del club analizando una partida" },
+    { "src": "/img/provisionales/joven-concentrado.jpg", "alt": "Jugador concentrado durante una partida" }
+  ],
+  "activo": true,
+  "orden": 3
+}

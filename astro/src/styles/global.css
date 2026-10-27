@@ -1,48 +1,60 @@
-/* Tokens de la sección 4 de docs/especificacion.md */
+/* Sistema visual según docs/direccion-de-diseno.md (prevalece sobre el apartado 4 de la especificación).
+   Proporción: 70 % blanco y crema, 20 % verde bosque, 7 % dorado en detalles, 3 % verde ajedrez y rojo. */
 :root {
   --color-primary: #14532d;
+  --color-primary-oscuro: #113f25;
   --color-accent: #2e7d32;
   --color-gold: #d4af37;
+  --color-gold-texto: #8a6d1c; /* dorado legible sobre claro para etiquetas pequeñas (4,6:1 sobre blanco) */
   --color-white: #ffffff;
+  --color-crema: #f7f4ec;
   --color-muted: #e5e5e5;
   --color-alert: #c62828;
   --color-text: #1f2937;
-  --color-surface: #f3f8f4;
+  --color-text-soft: #5b6472;
+  --color-borde: #e7e1d3;
+  --color-sobre-verde: rgb(255 255 255 / 0.92);
+  /* Se mantiene por compatibilidad con pantallas aún no rediseñadas */
+  --color-surface: var(--color-crema);
 
-  --color-primary-dark: #0e3d21;
-  --color-text-soft: #4b5563;
-  --color-borde: #d9e6dc;
-
-  /* Combinación 1 por defecto; el selector de la maqueta cambia data-tipo en <html> */
   --font-titulo: 'Fraunces Variable', Georgia, serif;
   --font-texto: 'Inter Variable', system-ui, sans-serif;
   --titulo-peso: 600;
+  --titulo-tracking: -0.015em;
 
   --radio: 8px;
-  --sombra: 0 1px 2px rgb(20 83 45 / 0.06), 0 4px 16px rgb(20 83 45 / 0.08);
-  --sombra-alta: 0 2px 4px rgb(20 83 45 / 0.08), 0 12px 32px rgb(20 83 45 / 0.14);
-  --ancho: 1180px;
+  --radio-foto: 12px;
+  --sombra: 0 1px 2px rgb(31 41 55 / 0.05), 0 2px 8px rgb(31 41 55 / 0.05);
+  --sombra-alta: 0 4px 10px rgb(31 41 55 / 0.06), 0 18px 40px rgb(31 41 55 / 0.12);
+  --transicion: 200ms ease;
+  --ancho: 1200px;
   --gutter: 16px;
-
-  --patron-tablero: repeating-conic-gradient(rgb(20 83 45 / 0.05) 0 25%, transparent 0 50%) 0 0 / 48px 48px;
-  --patron-tablero-claro: repeating-conic-gradient(rgb(255 255 255 / 0.05) 0 25%, transparent 0 50%) 0 0 / 48px 48px;
+  --separacion: 64px;
+  --alto-menu-movil: 64px;
 }
 
 html[data-tipo='2'] {
   --font-titulo: 'Playfair Display Variable', Georgia, serif;
-  --font-texto: 'Inter Variable', system-ui, sans-serif;
   --titulo-peso: 700;
+  --titulo-tracking: -0.01em;
 }
 
 html[data-tipo='3'] {
   --font-titulo: 'DM Serif Display', Georgia, serif;
   --font-texto: 'DM Sans Variable', system-ui, sans-serif;
   --titulo-peso: 400;
+  --titulo-tracking: -0.005em;
 }
 
 @media (min-width: 720px) {
   :root {
     --gutter: 32px;
+  }
+}
+
+@media (min-width: 960px) {
+  :root {
+    --separacion: 96px;
   }
 }
 
@@ -55,11 +67,17 @@ html[data-tipo='3'] {
 html {
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
+  scroll-padding-top: 90px;
 }
 
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
   }
 }
 
@@ -69,8 +87,9 @@ body {
   color: var(--color-text);
   font-family: var(--font-texto);
   font-size: 17px;
-  line-height: 1.5;
+  line-height: 1.6;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
 h1,
@@ -79,22 +98,25 @@ h3,
 h4 {
   font-family: var(--font-titulo);
   font-weight: var(--titulo-peso);
-  line-height: 1.15;
+  font-optical-sizing: auto;
+  letter-spacing: var(--titulo-tracking);
+  line-height: 1.12;
   margin: 0 0 0.5em;
   color: var(--color-primary);
   text-wrap: balance;
 }
 
 h1 {
-  font-size: clamp(2rem, 1.4rem + 2.6vw, 2.5rem);
+  font-size: clamp(2.25rem, 1.6rem + 2.8vw, 3.5rem);
+  line-height: 1.04;
 }
 
 h2 {
-  font-size: clamp(1.6rem, 1.3rem + 1.4vw, 2rem);
+  font-size: clamp(1.75rem, 1.35rem + 1.7vw, 2.5rem);
 }
 
 h3 {
-  font-size: 1.5rem;
+  font-size: clamp(1.25rem, 1.15rem + 0.45vw, 1.5rem);
 }
 
 p {
@@ -104,6 +126,7 @@ p {
 a {
   color: var(--color-accent);
   text-underline-offset: 3px;
+  transition: color var(--transicion);
 }
 
 a:hover {
@@ -116,8 +139,8 @@ img {
 }
 
 :focus-visible {
-  outline: 3px solid var(--color-gold);
-  outline-offset: 2px;
+  outline: 2px solid var(--color-gold);
+  outline-offset: 3px;
   border-radius: 2px;
 }
 
@@ -128,46 +151,100 @@ img {
   padding-inline: var(--gutter);
 }
 
+/* Secciones: blanco por defecto, crema y verde como alternancia */
 .seccion {
-  padding-block: clamp(48px, 7vw, 88px);
+  padding-block: var(--separacion);
 }
 
+.seccion--crema,
 .seccion--alterna {
-  background: var(--color-surface) var(--patron-tablero);
+  background: var(--color-crema);
+}
+
+.seccion--verde {
+  background: var(--color-primary);
+  color: var(--color-sobre-verde);
+}
+
+.seccion--verde h2,
+.seccion--verde h3 {
+  color: var(--color-white);
 }
 
 .seccion__cabecera {
   display: flex;
   justify-content: space-between;
   align-items: end;
-  gap: 16px;
+  gap: 16px 32px;
   flex-wrap: wrap;
-  margin-bottom: 28px;
+  margin-bottom: 40px;
 }
 
 .seccion__cabecera h2 {
   margin: 0;
 }
 
-/* Subrayado dorado bajo los títulos de sección */
+.seccion__intro {
+  max-width: 56ch;
+  color: var(--color-text-soft);
+  margin: 16px 0 0;
+}
+
+.seccion--verde .seccion__intro {
+  color: var(--color-sobre-verde);
+}
+
+/* Título con numeral dorado (01, 02...) y línea fina de 48 px */
+.titulo-seccion {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 16px;
+  align-items: baseline;
+}
+
+.titulo-seccion__num {
+  font-family: var(--font-titulo);
+  font-size: 0.95rem;
+  font-weight: 500;
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--color-gold-texto);
+  letter-spacing: 0.04em;
+}
+
+.seccion--verde .titulo-seccion__num,
+.sobre-foto .titulo-seccion__num {
+  color: var(--color-gold);
+}
+
+.titulo-seccion h2 {
+  margin: 0;
+}
+
+.titulo-seccion h2::after,
 .titulo-dorado::after {
   content: '';
   display: block;
-  width: 56px;
-  height: 3px;
+  width: 48px;
+  height: 1px;
+  margin-top: 16px;
   background: var(--color-gold);
-  margin-top: 12px;
-  border-radius: 2px;
 }
 
-.antetitulo {
+/* Etiquetas y fechas: Inter 13 px en mayúsculas */
+.antetitulo,
+.rotulo {
   font-family: var(--font-texto);
-  font-size: 0.8rem;
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-accent);
-  margin: 0 0 8px;
+  color: var(--color-gold-texto);
+  margin: 0 0 10px;
+}
+
+.seccion--verde .antetitulo,
+.sobre-foto .antetitulo {
+  color: var(--color-gold);
 }
 
 .boton {
@@ -176,15 +253,19 @@ img {
   justify-content: center;
   gap: 8px;
   min-height: 48px;
-  padding: 12px 22px;
+  padding: 12px 24px;
   border-radius: var(--radio);
-  border: 2px solid var(--color-accent);
+  border: 1.5px solid var(--color-accent);
   background: var(--color-accent);
   color: var(--color-white);
-  font: 600 1rem/1.2 var(--font-texto);
+  font: 600 15px/1.2 var(--font-texto);
+  letter-spacing: 0.01em;
   text-decoration: none;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition:
+    background var(--transicion),
+    border-color var(--transicion),
+    color var(--transicion);
 }
 
 .boton:hover {
@@ -195,94 +276,95 @@ img {
 
 .boton--secundario {
   background: transparent;
-  color: var(--color-accent);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
 .boton--secundario:hover {
-  background: var(--color-surface);
-  color: var(--color-primary);
-}
-
-.boton--claro {
-  background: var(--color-white);
-  border-color: var(--color-white);
-  color: var(--color-primary);
-}
-
-.boton--claro:hover {
-  background: var(--color-surface);
-  border-color: var(--color-surface);
-  color: var(--color-primary);
-}
-
-.boton--contorno-claro {
-  background: transparent;
-  border-color: rgb(255 255 255 / 0.7);
+  background: var(--color-primary);
   color: var(--color-white);
 }
 
+.boton--claro,
+.boton--contorno-claro {
+  background: transparent;
+  border-color: rgb(255 255 255 / 0.85);
+  color: var(--color-white);
+}
+
+.boton--claro:hover,
 .boton--contorno-claro:hover {
-  background: rgb(255 255 255 / 0.1);
+  background: var(--color-white);
   border-color: var(--color-white);
+  color: var(--color-primary);
 }
 
 .boton--pequeno {
   min-height: 40px;
   padding: 8px 16px;
-  font-size: 0.9rem;
+  font-size: 14px;
 }
 
 .enlace-flecha {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-weight: 600;
+  font-size: 15px;
+  color: var(--color-primary);
   text-decoration: none;
   white-space: nowrap;
+  border-bottom: 1px solid var(--color-gold);
+  padding-bottom: 2px;
 }
 
 .enlace-flecha::after {
-  content: ' \2192';
+  content: '\2192';
+  transition: transform var(--transicion);
 }
 
-.enlace-flecha:hover {
-  text-decoration: underline;
+.enlace-flecha:hover::after {
+  transform: translateX(3px);
 }
 
 .etiqueta {
   display: inline-block;
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: var(--color-surface);
-  color: var(--color-primary);
-  font-size: 0.78rem;
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-gold-texto);
 }
 
 .etiqueta--alerta {
+  padding: 4px 10px;
+  border-radius: 4px;
   background: var(--color-alert);
   color: var(--color-white);
+  letter-spacing: 0.04em;
 }
 
-.etiqueta--oro {
-  background: rgb(212 175 55 / 0.18);
-  color: #6b5410;
-}
-
-/* Para fondos verdes: dorado sólido con texto verde bosque (contraste 5,6:1) */
+.etiqueta--oro,
 .etiqueta--oro-solido {
-  background: var(--color-gold);
-  color: var(--color-primary);
+  color: var(--color-gold-texto);
+}
+
+.seccion--verde .etiqueta,
+.sobre-foto .etiqueta,
+.etiqueta--oro-solido {
+  color: var(--color-gold);
 }
 
 .tarjeta {
   background: var(--color-white);
-  border-radius: var(--radio);
-  box-shadow: var(--sombra);
+  border-radius: var(--radio-foto);
+  border: 1px solid var(--color-borde);
   overflow: hidden;
 }
 
 .rejilla {
   display: grid;
-  gap: 24px;
+  gap: 32px 24px;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
 }
 
@@ -311,7 +393,7 @@ img {
 }
 
 .prosa h2 {
-  font-size: 1.6rem;
+  font-size: clamp(1.4rem, 1.25rem + 0.6vw, 1.75rem);
   margin-top: 1.6em;
 }
 
@@ -323,7 +405,36 @@ img {
   margin-bottom: 0.4em;
 }
 
-.pieza {
-  font-family: 'Segoe UI Symbol', 'DejaVu Sans', 'Noto Sans Symbols 2', serif;
+.prosa li::marker {
+  color: var(--color-gold);
+}
+
+/* Cifras grandes: Fraunces 64 px en dorado */
+.cifra {
+  display: block;
+  font-family: var(--font-titulo);
+  font-weight: var(--titulo-peso);
+  font-optical-sizing: auto;
+  font-size: clamp(2.75rem, 2rem + 2.6vw, 4rem);
   line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--color-gold);
+  font-variant-numeric: lining-nums;
+}
+
+.cifra__texto {
+  display: block;
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-sobre-verde);
+}
+
+.confirmar {
+  font-size: 0.85em;
+  font-weight: 500;
+  color: var(--color-alert);
+  white-space: nowrap;
 }

@@ -1,40 +1,43 @@
-/* Tablero chessground con la paleta de Dama Gaztea (casillas #F3F8F4 y #2E7D32) */
+/* Tablero según la dirección de diseño: casillas crema #F0D9B5 y verde #2E7D32 al 85 %,
+   piezas cburnett de Lichess y marco fino dorado. */
 @import 'chessground/assets/chessground.base.css';
 @import 'chessground/assets/chessground.cburnett.css';
 
 .tablero {
+  --casilla-clara: #f0d9b5;
+  --casilla-oscura: #4b8e44; /* #2E7D32 al 85 % sobre la casilla clara */
   position: relative;
   width: 100%;
   aspect-ratio: 1;
-  border-radius: 4px;
-  box-shadow: var(--sombra);
+  border-radius: 2px;
+  outline: 1px solid var(--color-gold);
+  outline-offset: 5px;
   /* Mismo fondo antes de que cargue el JavaScript, para que no salte nada */
-  background: repeating-conic-gradient(var(--color-accent) 0 25%, var(--color-surface) 0 50%) 0 0 / 25% 25%;
+  background: repeating-conic-gradient(var(--casilla-oscura) 0 25%, var(--casilla-clara) 0 50%) 0 0 / 25% 25%;
 }
 
 .tablero cg-board {
-  background: repeating-conic-gradient(var(--color-accent) 0 25%, var(--color-surface) 0 50%) 0 0 / 25% 25%;
-  border-radius: 4px;
+  background: repeating-conic-gradient(var(--casilla-oscura) 0 25%, var(--casilla-clara) 0 50%) 0 0 / 25% 25%;
 }
 
 .tablero cg-board square.last-move {
-  background-color: rgb(212 175 55 / 0.5);
+  background-color: rgb(212 175 55 / 0.45);
 }
 
 .tablero cg-board square.selected {
-  background-color: rgb(20 83 45 / 0.55);
+  background-color: rgb(20 83 45 / 0.5);
 }
 
 .tablero cg-board square.move-dest {
-  background: radial-gradient(rgb(20 83 45 / 0.55) 22%, transparent 23%);
+  background: radial-gradient(rgb(20 83 45 / 0.5) 22%, transparent 23%);
 }
 
 .tablero cg-board square.oc.move-dest {
-  background: radial-gradient(transparent 0%, transparent 79%, rgb(20 83 45 / 0.5) 80%);
+  background: radial-gradient(transparent 0%, transparent 79%, rgb(20 83 45 / 0.45) 80%);
 }
 
 .tablero cg-board square.move-dest:hover {
-  background: rgb(20 83 45 / 0.35);
+  background: rgb(20 83 45 / 0.3);
 }
 
 .tablero coords {
@@ -44,7 +47,7 @@
 }
 
 .tablero coords coord {
-  color: var(--color-accent);
+  color: var(--casilla-oscura);
 }
 
 /* chessground desplaza las letras 24px a la derecha y se salen del tablero en móvil */
@@ -62,5 +65,5 @@
 .tablero.orientation-white coords.files coord:nth-child(odd),
 .tablero.orientation-black coords.ranks coord:nth-child(odd),
 .tablero.orientation-black coords.files coord:nth-child(even) {
-  color: var(--color-surface);
+  color: var(--casilla-clara);
 }

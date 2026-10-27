@@ -1,0 +1,32 @@
+---
+// Siluetas de piezas a línea (24x24, trazo 1.5). Heredan el color con currentColor.
+interface Props {
+  pieza: 'peon' | 'torre' | 'caballo' | 'dama' | 'rey';
+  tamano?: number;
+  class?: string;
+}
+const { pieza, tamano = 32, class: clase } = Astro.props;
+
+const trazos = {
+  peon: ['M12 3.5a2.6 2.6 0 1 1 0 5.2 2.6 2.6 0 0 1 0-5.2Z', 'M9.5 10.5h5', 'M10.5 10.5c0 3.2-1.4 5.4-3 7.5h9c-1.6-2.1-3-4.3-3-7.5', 'M6 20.5h12'],
+  torre: ['M7.5 9.5V4.5h2v2h1.75v-2h1.5v2h1.75v-2h2v5z', 'M8.6 9.5 9 17.5h6l.4-8', 'M7 17.5h10', 'M6 20.5h12'],
+  caballo: ['M8 20.5c-.6-3.4.6-5.8 3-8l-1.3-1.2-2.2 1-1.5-1.6c.6-2.4 2.3-4.4 4-5.4l1-2.3 1.2 1.8c3.3.2 5.3 3 5.3 6.2 0 3-.8 6.1-.6 9.5', 'M10.3 7.8h.01', 'M6 20.5h12'],
+  dama: ['M6 8.5 8.3 17h7.4L18 8.5l-3.6 3.8L12 6.5l-2.4 5.8z', 'M6 8.5h.01M18 8.5h.01M12 6.5h.01', 'M7.5 18.8h9', 'M6 20.5h12'],
+  rey: ['M12 2.5v4M10 4.5h4', 'M8.2 10c-1-1.9.5-3.5 3.8-3.5s4.8 1.6 3.8 3.5', 'M8 10h8l-1 8H9z', 'M6 20.5h12'],
+};
+---
+
+<svg
+  class={clase}
+  width={tamano}
+  height={tamano}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.5"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+>
+  {trazos[pieza].map((d) => <path d={d} />)}
+</svg>

@@ -1,0 +1,18 @@
+{
+  "nombre": "Academia Anakids",
+  "localidad": "Bilbao",
+  "tipo": "academia",
+  "direccion": "Bilbao (dirección exacta por confirmar)",
+  "ubicacion": { "lat": 43.263, "lng": -2.935 },
+  "descripcion": "Grupo de los jueves en Bilbao, en colaboración con la academia Anakids.",
+  "grupos": [
+    { "nivel": "Grupo de jueves", "diaSemana": "Jueves", "horaInicio": "18:00", "horaFin": "19:25", "edades": "(confirmar)" }
+  ],
+  "mostrarPlazas": false,
+  "fotos": [
+    { "src": "/img/provisionales/hero-ninos-biblioteca.jpg", "alt": "Dos alumnos jugando en un tablero grande de madera" },
+    { "src": "/img/provisionales/nina-jugando.jpg", "alt": "Alumna de iniciación moviendo una pieza" }
+  ],
+  "activo": true,
+  "orden": 4
+}

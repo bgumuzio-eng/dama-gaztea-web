@@ -1,103 +1,105 @@
 ---
-import { getCollection } from 'astro:content';
 import Logo from './Logo.astro';
 import ajustes from '../data/ajustes.json';
+import { centrosActivos } from '../lib/datos';
 import { enlaceWhatsApp } from '../lib/formato';
 
-const centros = (await getCollection('centros', ({ data }) => data.activo)).sort((a, b) => a.data.orden - b.data.orden);
+const centros = await centrosActivos();
 const anio = new Date().getFullYear();
 ---
 
 <footer class="pie">
-  <div class="pie__cierre">
-    <div class="contenedor">
-      <p>{ajustes.fraseCierre}</p>
+  <div class="contenedor">
+    <p class="pie__cierre">{ajustes.fraseCierre}</p>
+    <div class="pie__rejilla">
+      <div class="pie__marca">
+        <Logo eslogan />
+      </div>
+      <div>
+        <h2 class="pie__titulo">Centros</h2>
+        <ul>
+          {
+            centros.map((c) => (
+              <li>
+                <a href={`/centros/${c.id}/`}>
+                  {c.data.nombre}, {c.data.localidad}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+      <div>
+        <h2 class="pie__titulo">Contacto</h2>
+        <ul>
+          <li><a href={`tel:+34${ajustes.telefono.replace(/\s/g, '')}`}>{ajustes.telefono}</a></li>
+          <li><a href={enlaceWhatsApp()}>WhatsApp</a></li>
+          <li><a href={`mailto:${ajustes.email}`}>{ajustes.email}</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2 class="pie__titulo">Síguenos</h2>
+        <ul>
+          <li><a href={ajustes.redes.instagram} rel="noopener">Instagram</a></li>
+          <li><a href={ajustes.redes.tiktok} rel="noopener">TikTok</a></li>
+          <li><a href={ajustes.redes.youtube} rel="noopener">YouTube</a></li>
+        </ul>
+      </div>
     </div>
-  </div>
-  <div class="contenedor pie__rejilla">
-    <div>
-      <Logo eslogan />
+    <div class="pie__legal">
+      <span>© {anio} {ajustes.nombreAcademia}</span>
+      <a href="#">Aviso legal</a>
+      <a href="#">Privacidad</a>
+      <a href="#">Cookies</a>
+      <a href="#">Imagen de menores</a>
+      <a href="#">Panel</a>
     </div>
-    <div>
-      <h2 class="pie__titulo">Centros</h2>
-      <ul>
-        {
-          centros.map((c) => (
-            <li>
-              <a href={`/centros/${c.id}/`}>{c.data.localidad}: {c.data.nombre}</a>
-            </li>
-          ))
-        }
-      </ul>
-    </div>
-    <div>
-      <h2 class="pie__titulo">Contacto</h2>
-      <ul>
-        <li><a href={`tel:+34${ajustes.telefono.replace(/\s/g, '')}`}>{ajustes.telefono}</a></li>
-        <li><a href={enlaceWhatsApp()}>WhatsApp</a></li>
-        <li><a href={`mailto:${ajustes.email}`}>{ajustes.email}</a></li>
-      </ul>
-    </div>
-    <div>
-      <h2 class="pie__titulo">Síguenos</h2>
-      <ul>
-        <li><a href={ajustes.redes.instagram} rel="noopener">Instagram</a></li>
-        <li><a href={ajustes.redes.tiktok} rel="noopener">TikTok</a></li>
-        <li><a href={ajustes.redes.youtube} rel="noopener">YouTube</a></li>
-      </ul>
-    </div>
-  </div>
-  <div class="contenedor pie__legal">
-    <span>© {anio} {ajustes.nombreAcademia}</span>
-    <a href="#">Aviso legal</a>
-    <a href="#">Privacidad</a>
-    <a href="#">Cookies</a>
-    <a href="#">Imagen de menores</a>
-    <a href="#">Panel</a>
   </div>
 </footer>
 
 <style>
+  /* Patrón de tablero casi imperceptible: #113F25 sobre #14532D, solo aquí */
   .pie {
-    background: var(--color-primary) var(--patron-tablero-claro);
-    color: var(--color-muted);
-    padding-bottom: 88px;
+    background:
+      repeating-conic-gradient(var(--color-primary-oscuro) 0 25%, transparent 0 50%) 0 0 / 64px 64px,
+      var(--color-primary);
+    color: var(--color-sobre-verde);
+    padding-top: var(--separacion);
+    padding-bottom: calc(var(--alto-menu-movil) + 16px);
+  }
+  @media (min-width: 1100px) {
+    .pie {
+      padding-bottom: 24px;
+    }
   }
   .pie__cierre {
-    border-bottom: 1px solid rgb(255 255 255 / 0.12);
+    margin: 0 0 var(--separacion);
     text-align: center;
-  }
-  .pie__cierre p {
-    margin: 0;
-    padding: 36px 0;
     font-family: var(--font-titulo);
     font-style: italic;
-    font-size: clamp(1.4rem, 1.1rem + 1.4vw, 2rem);
-    color: var(--color-white);
-  }
-  .pie__cierre p::after {
-    content: '';
-    display: block;
-    width: 56px;
-    height: 3px;
-    margin: 14px auto 0;
-    background: var(--color-gold);
-    border-radius: 2px;
+    font-weight: 400;
+    font-size: 24px;
+    color: var(--color-gold);
   }
   .pie__rejilla {
     display: grid;
     gap: 32px;
-    padding-block: 48px;
+    padding-bottom: 48px;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+  @media (min-width: 960px) {
+    .pie__rejilla {
+      grid-template-columns: 1.4fr 1.2fr 1fr 0.8fr;
+    }
   }
   .pie__titulo {
     font-family: var(--font-texto);
-    font-size: 0.8rem;
+    font-size: 13px;
     font-weight: 600;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--color-gold);
-    margin-bottom: 12px;
+    margin-bottom: 14px;
   }
   .pie ul {
     list-style: none;
@@ -106,21 +108,27 @@ const anio = new Date().getFullYear();
   }
   .pie li {
     margin-bottom: 8px;
+    font-size: 15px;
   }
   .pie a {
-    color: var(--color-muted);
+    color: var(--color-sobre-verde);
     text-decoration: none;
   }
   .pie a:hover {
     color: var(--color-white);
     text-decoration: underline;
+    text-decoration-color: var(--color-gold);
   }
   .pie__legal {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px 20px;
+    gap: 8px 24px;
     padding-block: 20px;
-    border-top: 1px solid rgb(255 255 255 / 0.12);
-    font-size: 14px;
+    border-top: 1px solid rgb(212 175 55 / 0.3);
+    font-size: 13px;
+    color: rgb(255 255 255 / 0.7);
+  }
+  .pie__legal a {
+    color: rgb(255 255 255 / 0.7);
   }
 </style>

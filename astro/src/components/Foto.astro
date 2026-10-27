@@ -1,70 +1,57 @@
 ---
-// Foto real si hay src; si no, hueco con el texto alternativo para que el club vea qué foto va ahí.
-import { PIEZAS, type Pieza } from '../lib/formato';
+// Fotografía con pie "foto provisional" mientras sea de Unsplash (src bajo /img/provisionales/).
+// Si no hay src se usa una provisional genérica: en la maqueta no queda ningún hueco gris.
 interface Props {
   imagen: { src?: string; alt: string };
   proporcion?: string;
-  pieza?: Pieza;
-  tono?: 'verde' | 'claro';
   class?: string;
-  mostrarTexto?: boolean;
+  posicion?: string;
+  prioridad?: boolean;
+  ancho?: number;
+  pie?: boolean;
 }
-const { imagen, proporcion = '16 / 9', pieza = 'caballo', tono = 'claro', class: clase, mostrarTexto = true } = Astro.props;
+const { imagen, proporcion, class: clase, posicion = 'center', prioridad = false, ancho = 1600, pie = true } = Astro.props;
+const src = imagen.src ?? '/img/provisionales/piezas-madera-desenfoque.jpg';
+const provisional = src.includes('/img/provisionales/');
+const estilo = [proporcion && `aspect-ratio:${proporcion}`, `object-position:${posicion}`].filter(Boolean).join(';');
 ---
 
-{
-  imagen.src ? (
-    <img src={imagen.src} alt={imagen.alt} class:list={['foto', clase]} style={`aspect-ratio:${proporcion}`} loading="lazy" />
-  ) : (
-    <div class:list={['foto', 'foto--hueco', `foto--${tono}`, clase]} style={`aspect-ratio:${proporcion}`} role="img" aria-label={imagen.alt}>
-      <span class="foto__pieza pieza" aria-hidden="true">{PIEZAS[pieza]}</span>
-      {mostrarTexto && <span class="foto__texto" aria-hidden="true">Foto: {imagen.alt}</span>}
-    </div>
-  )
-}
+<figure class:list={['foto', clase]}>
+  <img
+    src={src}
+    alt={imagen.alt}
+    style={estilo}
+    width={ancho}
+    height={Math.round(ancho / 1.5)}
+    loading={prioridad ? 'eager' : 'lazy'}
+    decoding="async"
+    fetchpriority={prioridad ? 'high' : 'auto'}
+  />
+  {pie && provisional && <figcaption class="foto__provisional">Foto provisional</figcaption>}
+</figure>
 
 <style>
   .foto {
-    width: 100%;
-    object-fit: cover;
-  }
-  .foto--hueco {
     position: relative;
-    display: grid;
-    place-items: center;
+    margin: 0;
     overflow: hidden;
   }
-  .foto--claro {
-    background:
-      var(--patron-tablero),
-      linear-gradient(135deg, #e6f0e8, #cfe3d4);
-    color: var(--color-accent);
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
-  .foto--verde {
-    background:
-      var(--patron-tablero-claro),
-      radial-gradient(circle at 70% 30%, #2e7d32, var(--color-primary) 70%);
-    color: var(--color-gold);
-  }
-  .foto__pieza {
-    font-size: clamp(48px, 9vw, 96px);
-    opacity: 0.55;
-  }
-  .foto--verde .foto__pieza {
-    opacity: 0.8;
-  }
-  .foto__texto {
+  .foto__provisional {
     position: absolute;
     left: 10px;
-    right: 10px;
     bottom: 10px;
-    padding: 4px 8px;
+    padding: 3px 8px;
     border-radius: 4px;
-    background: rgb(255 255 255 / 0.85);
-    color: var(--color-text-soft);
-    font-size: 12px;
-    line-height: 1.3;
-    width: fit-content;
-    max-width: calc(100% - 20px);
+    background: rgb(17 24 39 / 0.55);
+    color: rgb(255 255 255 / 0.92);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    pointer-events: none;
   }
 </style>

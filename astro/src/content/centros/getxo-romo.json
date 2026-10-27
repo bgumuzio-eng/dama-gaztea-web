@@ -1,0 +1,20 @@
+{
+  "nombre": "Casa de Cultura RKE Romo",
+  "localidad": "Getxo",
+  "tipo": "otro",
+  "direccion": "Santa Eugenia plaza 1, 48930 Getxo",
+  "ubicacion": { "lat": 43.3297, "lng": -3.0072 },
+  "descripcion": "Sede del club Dama Gaztea Xake Kluba, inaugurado en julio de 2024. Clases los viernes por la tarde y los sábados por la mañana, y escenario habitual de los torneos del club.",
+  "grupos": [
+    { "nivel": "Grupo de viernes", "diaSemana": "Viernes", "horaInicio": "18:00", "horaFin": "19:25", "edades": "(confirmar)", "plazasDisponibles": 0 },
+    { "nivel": "Grupo de sábado", "diaSemana": "Sábado", "horaInicio": "10:00", "horaFin": "11:55", "edades": "(confirmar)" }
+  ],
+  "mostrarPlazas": false,
+  "fotos": [
+    { "src": "/img/provisionales/ninos-partida-madera.jpg", "alt": "Alumnos jugando una partida en clase" },
+    { "src": "/img/provisionales/sala-torneo-jugadores.jpg", "alt": "Sala de juego durante un torneo del club" },
+    { "src": "/img/provisionales/mano-moviendo-pieza.jpg", "alt": "Mano de un alumno moviendo una pieza" }
+  ],
+  "activo": true,
+  "orden": 1
+}

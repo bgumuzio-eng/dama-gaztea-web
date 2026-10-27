@@ -4,94 +4,107 @@ import { diaMes, fechaLarga, isoDia, TIPOS_TORNEO } from '../lib/formato';
 interface Props {
   torneo: CollectionEntry<'torneos'>;
   avisoPlazo?: boolean;
+  tono?: 'claro' | 'oscuro';
 }
-const { torneo, avisoPlazo = false } = Astro.props;
-const { nombre, fecha, horaInicio, lugar, tipo, perteneceAlCircuito, numeroDePrueba, fechaLimite } = torneo.data;
+const { torneo, avisoPlazo = false, tono = 'claro' } = Astro.props;
+const { nombre, fecha, horaInicio, lugar, tipo, perteneceAlCircuito, numeroDePrueba, fechaLimite, fechaPorConfirmar } = torneo.data;
 const centro = lugar.centro ? await getEntry(lugar.centro) : undefined;
 const { dia, mes } = diaMes(fecha);
 ---
 
-<article class="torneo-card">
+<article class:list={['torneo-card', `torneo-card--${tono}`]}>
   <time class="torneo-card__fecha" datetime={isoDia(fecha)}>
     <span class="torneo-card__dia">{dia}</span>
     <span class="torneo-card__mes">{mes}</span>
   </time>
   <div class="torneo-card__info">
-    <p class="torneo-card__etiquetas">
-      <span class="etiqueta etiqueta--oro">{perteneceAlCircuito ? `Circuito · Prueba ${numeroDePrueba}` : TIPOS_TORNEO[tipo]}</span>
-      {avisoPlazo && fechaLimite && <span class="etiqueta etiqueta--alerta">Inscripción hasta el {fechaLarga(fechaLimite).replace(/ de \d{4}$/, '')}</span>}
-    </p>
+    <p class="etiqueta">{perteneceAlCircuito ? `Circuito · Prueba ${numeroDePrueba}` : TIPOS_TORNEO[tipo]}</p>
     <h3><a href={`/torneos/${torneo.id}/`}>{nombre}</a></h3>
-    <p class="texto-suave pequeno">
+    <p class="torneo-card__lugar">
+      {fechaPorConfirmar && <span class="confirmar">Fecha (confirmar) · </span>}
       {horaInicio} h · {centro ? `${centro.data.nombre}, ${centro.data.localidad}` : lugar.texto}
     </p>
+    {
+      avisoPlazo && fechaLimite && !fechaPorConfirmar && (
+        <p class="etiqueta etiqueta--alerta">Inscripción hasta el {fechaLarga(fechaLimite).replace(/ de \d{4}$/, '')}</p>
+      )
+    }
   </div>
-  <a href={`/torneos/${torneo.id}/`} class="boton boton--pequeno torneo-card__boton" tabindex="-1" aria-hidden="true">Ver e inscribirse</a>
 </article>
 
 <style>
   .torneo-card {
+    position: relative;
     display: grid;
     grid-template-columns: auto 1fr;
-    gap: 16px 20px;
-    align-items: center;
-    padding: 18px 20px;
-    background: var(--color-white);
-    border-radius: var(--radio);
-    box-shadow: var(--sombra);
-    border-left: 4px solid var(--color-gold);
+    gap: 20px;
+    align-items: start;
+    padding: 20px 0;
+    border-top: 1px solid var(--color-borde);
+  }
+  .torneo-card--oscuro {
+    border-top-color: rgb(212 175 55 / 0.35);
   }
   .torneo-card__fecha {
-    display: grid;
-    place-items: center;
-    width: 68px;
-    height: 72px;
-    border-radius: var(--radio);
-    background: var(--color-primary);
-    color: var(--color-white);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 64px;
+    padding-top: 2px;
     line-height: 1;
   }
   .torneo-card__dia {
     font-family: var(--font-titulo);
-    font-size: 1.9rem;
     font-weight: var(--titulo-peso);
+    font-size: 2.6rem;
+    letter-spacing: -0.02em;
+    color: var(--color-gold);
   }
   .torneo-card__mes {
-    font-size: 0.8rem;
+    margin-top: 6px;
+    font-size: 13px;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--color-gold);
-    margin-top: -14px;
+    letter-spacing: 0.08em;
+    color: var(--color-text-soft);
   }
-  .torneo-card__etiquetas {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-bottom: 6px;
+  .torneo-card--oscuro .torneo-card__mes,
+  .torneo-card--oscuro .torneo-card__lugar {
+    color: var(--color-sobre-verde);
+  }
+  .etiqueta {
+    margin: 0 0 6px;
+  }
+  .torneo-card--oscuro .etiqueta:not(.etiqueta--alerta) {
+    color: var(--color-gold);
   }
   h3 {
-    font-size: 1.2rem;
-    margin-bottom: 4px;
+    font-size: 1.4rem;
+    margin-bottom: 6px;
   }
   h3 a {
     color: var(--color-primary);
     text-decoration: none;
   }
+  .torneo-card--oscuro h3 a {
+    color: var(--color-white);
+  }
+  h3 a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
   h3 a:hover {
     text-decoration: underline;
+    text-decoration-color: var(--color-gold);
+    text-decoration-thickness: 1px;
   }
-  .torneo-card__info p:last-child {
-    margin: 0;
+  .torneo-card__lugar {
+    margin: 0 0 10px;
+    font-size: 15px;
+    color: var(--color-text-soft);
   }
-  .torneo-card__boton {
-    grid-column: 1 / -1;
-  }
-  @media (min-width: 720px) {
-    .torneo-card {
-      grid-template-columns: auto 1fr auto;
-    }
-    .torneo-card__boton {
-      grid-column: auto;
-    }
+  .torneo-card--oscuro .confirmar {
+    color: #ffb4a8;
   }
 </style>

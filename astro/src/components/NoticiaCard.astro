@@ -1,23 +1,22 @@
 ---
+// Tarjeta de noticia: foto 3:2, etiqueta dorada, titular Fraunces 22 px, fecha en gris.
+// Toda la tarjeta es enlace; sombra solo al pasar el ratón.
 import type { CollectionEntry } from 'astro:content';
 import Foto from './Foto.astro';
-import { fechaLarga, isoDia, PIEZA_CATEGORIA } from '../lib/formato';
+import { fechaLarga, isoDia } from '../lib/formato';
 interface Props {
   noticia: CollectionEntry<'noticias'>;
 }
 const { noticia } = Astro.props;
-const { titulo, fecha, categoria, imagenPrincipal, resumen } = noticia.data;
+const { titulo, fecha, categoria, imagenPrincipal } = noticia.data;
 ---
 
-<article class="tarjeta noticia-card">
-  <Foto imagen={imagenPrincipal} pieza={PIEZA_CATEGORIA[categoria]} mostrarTexto={false} />
+<article class="noticia-card">
+  <Foto imagen={imagenPrincipal} proporcion="3 / 2" ancho={800} class="noticia-card__foto" />
   <div class="noticia-card__cuerpo">
-    <p class="noticia-card__meta">
-      <span class="etiqueta">{categoria}</span>
-      <time datetime={isoDia(fecha)}>{fechaLarga(fecha)}</time>
-    </p>
+    <p class="etiqueta">{categoria}</p>
     <h3><a href={`/noticias/${noticia.id}/`}>{titulo}</a></h3>
-    <p class="texto-suave pequeno">{resumen}</p>
+    <time datetime={isoDia(fecha)}>{fechaLarga(fecha)}</time>
   </div>
 </article>
 
@@ -26,45 +25,52 @@ const { titulo, fecha, categoria, imagenPrincipal, resumen } = noticia.data;
     position: relative;
     display: flex;
     flex-direction: column;
-    transition: box-shadow 0.15s, transform 0.15s;
+    height: 100%;
+    border-radius: var(--radio-foto);
+    background: var(--color-white);
+    transition: box-shadow var(--transicion), transform var(--transicion);
   }
   .noticia-card:hover {
     box-shadow: var(--sombra-alta);
     transform: translateY(-2px);
   }
-  .noticia-card__cuerpo {
-    padding: 18px 20px 20px;
+  .noticia-card :global(.noticia-card__foto) {
+    border-radius: var(--radio-foto);
   }
-  .noticia-card__meta {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-    font-size: 14px;
-    color: var(--color-text-soft);
-    margin-bottom: 10px;
+  .noticia-card__cuerpo {
+    padding: 18px 4px 8px;
+    transition: padding var(--transicion);
+  }
+  .noticia-card:hover .noticia-card__cuerpo {
+    padding-inline: 16px;
+  }
+  .etiqueta {
+    margin: 0 0 8px;
   }
   h3 {
-    font-size: 1.3rem;
+    font-size: 22px;
+    line-height: 1.2;
+    margin-bottom: 10px;
   }
   h3 a {
     color: var(--color-primary);
     text-decoration: none;
   }
-  /* Toda la tarjeta es clicable */
   h3 a::after {
     content: '';
     position: absolute;
     inset: 0;
+    border-radius: var(--radio-foto);
   }
   h3 a:focus-visible {
     outline: none;
   }
-  .noticia-card:has(a:focus-visible) {
-    outline: 3px solid var(--color-gold);
-    outline-offset: 2px;
+  h3 a:focus-visible::after {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 4px;
   }
-  p:last-child {
-    margin: 0;
+  time {
+    font-size: 14px;
+    color: var(--color-text-soft);
   }
 </style>
