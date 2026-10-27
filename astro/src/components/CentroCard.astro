@@ -1,45 +1,63 @@
 ---
+// Tarjeta de centro: foto 3:2, localidad en dorado, nombre y una línea por grupo con día y hora.
 import type { CollectionEntry } from 'astro:content';
-import { TIPOS_CENTRO } from '../lib/formato';
+import Foto from './Foto.astro';
 interface Props {
   centro: CollectionEntry<'centros'>;
 }
 const { centro } = Astro.props;
-const { nombre, localidad, tipo, grupos } = centro.data;
-const dias = [...new Set(grupos.map((g) => g.diaSemana))].join(' · ');
+const { nombre, localidad, grupos, fotos } = centro.data;
 ---
 
 <article class="centro-card">
-  <p class="centro-card__localidad">{localidad}</p>
+  <Foto imagen={fotos[0] ?? { alt: nombre }} proporcion="3 / 2" ancho={800} class="centro-card__foto" />
+  <p class="etiqueta">{localidad}</p>
   <h3><a href={`/centros/${centro.id}/`}>{nombre}</a></h3>
-  <p class="pequeno texto-suave">{TIPOS_CENTRO[tipo]} · {grupos.length} grupos</p>
-  <p class="pequeno">{dias}</p>
+  <ul>
+    {
+      grupos.map((g) => (
+        <li>
+          <span>{g.diaSemana}</span>
+          <span>
+            {g.horaInicio} a {g.horaFin}
+          </span>
+        </li>
+      ))
+    }
+  </ul>
 </article>
 
 <style>
   .centro-card {
     position: relative;
-    padding: 18px 20px;
-    background: var(--color-white);
-    border-radius: var(--radio);
-    box-shadow: var(--sombra);
-    border-top: 3px solid var(--color-accent);
-    transition: box-shadow 0.15s;
+    height: 100%;
+    padding-bottom: 8px;
+    border-radius: var(--radio-foto);
+    transition: box-shadow var(--transicion), transform var(--transicion), background var(--transicion);
   }
   .centro-card:hover {
+    background: var(--color-white);
     box-shadow: var(--sombra-alta);
+    transform: translateY(-2px);
   }
-  .centro-card__localidad {
-    margin: 0 0 4px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--color-accent);
+  .centro-card :global(.centro-card__foto) {
+    border-radius: var(--radio-foto);
+    margin-bottom: 18px;
+  }
+  .centro-card > :not(:first-child) {
+    margin-inline: 4px;
+    transition: margin var(--transicion);
+  }
+  .centro-card:hover > :not(:first-child) {
+    margin-inline: 16px;
+  }
+  .etiqueta {
+    margin-top: 0;
+    margin-bottom: 6px;
   }
   h3 {
-    font-size: 1.2rem;
-    margin-bottom: 6px;
+    font-size: 22px;
+    margin-bottom: 10px;
   }
   h3 a {
     color: var(--color-primary);
@@ -49,8 +67,21 @@ const dias = [...new Set(grupos.map((g) => g.diaSemana))].join(' · ');
     content: '';
     position: absolute;
     inset: 0;
+    border-radius: var(--radio-foto);
   }
-  p {
-    margin: 0 0 4px;
+  ul {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  li {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+  }
+  li span:first-child {
+    color: var(--color-text-soft);
   }
 </style>

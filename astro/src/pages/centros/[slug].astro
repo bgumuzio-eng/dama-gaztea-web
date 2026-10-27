@@ -1,8 +1,10 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+import CabeceraFoto from '../../components/CabeceraFoto.astro';
 import Foto from '../../components/Foto.astro';
 import CentroCard from '../../components/CentroCard.astro';
+import Mapa from '../../components/Mapa.astro';
 import TorneoCard from '../../components/TorneoCard.astro';
 import ajustes from '../../data/ajustes.json';
 import { centrosActivos, torneosProximos } from '../../lib/datos';
@@ -22,7 +24,8 @@ const { nombre, localidad, tipo, direccion, ubicacion, descripcion, grupos, most
 const otros = todos.filter((c) => c.id !== centro.id);
 const torneos = (await torneosProximos()).filter((t) => t.data.lugar.centro?.id === centro.id);
 const mensaje = `Hola, quiero información sobre las clases de ajedrez en ${nombre} (${localidad}).`;
-const mapa = `https://maps.google.com/maps?q=${ubicacion.lat},${ubicacion.lng}&z=15&output=embed`;
+const enlaceMapa = `https://www.google.com/maps/search/?api=1&query=${ubicacion.lat},${ubicacion.lng}`;
+const [portada, ...galeria] = fotos;
 
 const datosEstructurados = {
   '@context': 'https://schema.org',
@@ -34,7 +37,9 @@ const datosEstructurados = {
   telephone: ajustes.telefono,
 };
 
-const textoPlazas = (n?: number) => (n === undefined ? '' : n === 0 ? 'Completo' : n === 1 ? '1 plaza' : `${n} plazas`);
+const textoPlazas = (n?: number) => (n === undefined ? '' : n === 0 ? 'Completo' : n === 1 ? '1 plaza libre' : `${n} plazas libres`);
+// Los textos "(confirmar)" del contenido se resaltan en rojo
+const partes = (t: string) => t.split(/(\(confirmar\)|\(dirección exacta por confirmar\))/);
 ---
 
 <Base
@@ -44,271 +49,263 @@ const textoPlazas = (n?: number) => (n === undefined ? '' : n === 0 ? 'Completo'
 >
   <script slot="head" type="application/ld+json" set:html={JSON.stringify(datosEstructurados)} />
 
-  <header class="centro__cabecera">
-    <div class="contenedor">
-      <nav class="migas pequeno" aria-label="Migas de pan">
-        <a href="/">Inicio</a> <span aria-hidden="true">/</span> <a href="/#centros">Centros y horarios</a>
-      </nav>
-      <p class="antetitulo">{TIPOS_CENTRO[tipo]} · {localidad}</p>
-      <h1>Clases de ajedrez en {localidad}</h1>
-      <p class="centro__nombre">{nombre}</p>
-      <p class="centro__direccion">{direccion}</p>
-    </div>
-  </header>
+  <CabeceraFoto
+    imagen={portada ?? { alt: nombre }}
+    antetitulo={`${TIPOS_CENTRO[tipo]} · ${localidad}`}
+    titulo={`Clases de ajedrez en ${localidad}`}
+    migas={[{ texto: 'Inicio', href: '/' }, { texto: 'Centros y horarios', href: '/#centros' }, { texto: nombre }]}
+  >
+    <p class="cabecera-foto__sub">
+      <strong class="centro__nombre">{nombre}</strong><br />
+      {partes(direccion).map((p) => (p.includes('confirmar') ? <span class="confirmar-claro">{p}</span> : p))}
+    </p>
+  </CabeceraFoto>
 
   <div class="contenedor centro__rejilla seccion">
     <div class="centro__principal">
       <p class="centro__descripcion">{descripcion}</p>
 
-      <h2 class="titulo-dorado">Grupos y horarios</h2>
-      <div class="tabla-envoltorio">
-        <table class="horarios">
-          <thead>
-            <tr>
-              <th scope="col">Grupo</th>
-              <th scope="col">Día</th>
-              <th scope="col">Horario</th>
-              <th scope="col">Edades</th>
-              {mostrarPlazas && <th scope="col">Plazas</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {
-              grupos.map((g) => (
-                <tr>
-                  <th scope="row">{g.nivel}</th>
-                  <td data-etiqueta="Día">{g.diaSemana}</td>
-                  <td data-etiqueta="Horario">
+      <section aria-labelledby="horarios-titulo">
+        <h2 id="horarios-titulo" class="titulo-dorado">Grupos y horarios</h2>
+        <p class="texto-suave pequeno">Curso 2026/2027</p>
+        <ul class="grupos">
+          {
+            grupos.map((g) => (
+              <li class="grupo">
+                <div class="grupo__dia">
+                  <span class="grupo__dia-nombre">{g.diaSemana}</span>
+                  <span class="grupo__hora">
                     {g.horaInicio} a {g.horaFin}
-                  </td>
-                  <td data-etiqueta="Edades">{g.edades}</td>
-                  {mostrarPlazas && (
-                    <td data-etiqueta="Plazas">
-                      <span class:list={['plazas', { 'plazas--completo': g.plazasDisponibles === 0 }]}>{textoPlazas(g.plazasDisponibles)}</span>
-                    </td>
-                  )}
-                </tr>
-              ))
-            }
-          </tbody>
-        </table>
-      </div>
+                  </span>
+                </div>
+                <div class="grupo__info">
+                  <span class="grupo__nivel">{g.nivel}</span>
+                  <span class="grupo__edades">
+                    Edades: {partes(g.edades).map((p) => (p.includes('confirmar') ? <span class="confirmar">{p}</span> : p))}
+                  </span>
+                </div>
+                {(mostrarPlazas || g.plazasDisponibles === 0) && g.plazasDisponibles !== undefined && (
+                  <span class:list={['grupo__plazas', { 'grupo__plazas--completo': g.plazasDisponibles === 0 }]}>
+                    {textoPlazas(g.plazasDisponibles)}
+                  </span>
+                )}
+              </li>
+            ))
+          }
+        </ul>
+      </section>
 
-      <h2 class="titulo-dorado">Fotos</h2>
-      <ul class="centro__fotos">
-        {
-          fotos.map((f, i) => (
-            <li>
-              <Foto imagen={f} proporcion="4 / 3" pieza={(['dama', 'peon', 'torre'] as const)[i % 3]} />
-            </li>
-          ))
-        }
-      </ul>
+      {
+        galeria.length > 0 && (
+          <section class="centro__galeria" aria-labelledby="fotos-titulo">
+            <h2 id="fotos-titulo" class="titulo-dorado">
+              Así son las clases
+            </h2>
+            <ul>
+              {galeria.map((f) => (
+                <li>
+                  <Foto imagen={f} proporcion="4 / 3" ancho={900} class="centro__foto" />
+                </li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
 
       {
         torneos.length > 0 && (
-          <>
+          <section class="centro__torneos">
             <h2 class="titulo-dorado">Próximos torneos aquí</h2>
-            <div class="centro__torneos">
-              {torneos.map((t) => (
-                <TorneoCard torneo={t} />
-              ))}
-            </div>
-          </>
+            {torneos.map((t) => (
+              <TorneoCard torneo={t} />
+            ))}
+          </section>
         )
       }
     </div>
 
     <aside class="centro__lateral">
-      <div class="tarjeta centro__contacto">
-        <h2>¿Te interesa este centro?</h2>
-        <p class="pequeno texto-suave">Escríbenos y te decimos qué grupo encaja mejor y si hay plaza.</p>
-        <a href={enlaceWhatsApp(mensaje)} class="boton centro__boton" target="_blank" rel="noopener">Pregunta por WhatsApp</a>
-        <a href="/#contacto" class="boton boton--secundario centro__boton">Formulario de información</a>
+      <div class="centro__contacto">
+        <p class="etiqueta">¿Hay plaza?</p>
+        <h2>Pregunta sin compromiso</h2>
+        <p class="texto-suave">Te decimos qué grupo encaja con la edad y el nivel, y si queda sitio.</p>
+        <a href={enlaceWhatsApp(mensaje)} class="boton centro__boton" target="_blank" rel="noopener">Escribir por WhatsApp</a>
+        <a href={`tel:+34${ajustes.telefono.replace(/\s/g, '')}`} class="centro__telefono">o llama al {ajustes.telefono}</a>
       </div>
       <div class="centro__mapa">
-        <iframe
-          src={mapa}
-          title={`Mapa de ${nombre}`}
-          loading="lazy"
-          referrerpolicy="no-referrer-when-downgrade"
-          width="100%"
-          height="300"></iframe>
+        <Mapa centros={todos} destacado={centro.id} />
+        <a href={enlaceMapa} class="enlace-flecha centro__como-llegar" target="_blank" rel="noopener">Cómo llegar en Google Maps</a>
       </div>
     </aside>
   </div>
 
-  <section class="seccion seccion--alterna">
+  <section class="seccion seccion--crema">
     <div class="contenedor">
-      <h2 class="titulo-dorado">Otros centros</h2>
-      <div class="rejilla">
-        {otros.map((c) => <CentroCard centro={c} />)}
+      <div class="seccion__cabecera">
+        <h2 class="titulo-dorado">Otros centros</h2>
+        <a href="/#centros" class="enlace-flecha">Todos los horarios</a>
       </div>
+      <ul class="otros">
+        {
+          otros.map((c) => (
+            <li>
+              <CentroCard centro={c} />
+            </li>
+          ))
+        }
+      </ul>
     </div>
   </section>
 </Base>
 
 <style>
-  .centro__cabecera {
-    background: var(--color-primary) var(--patron-tablero-claro);
-    color: var(--color-white);
-    padding-block: 28px 40px;
-  }
-  .centro__cabecera h1 {
-    color: var(--color-white);
-    margin-bottom: 8px;
-  }
-  .centro__cabecera .antetitulo {
-    color: var(--color-gold);
-  }
-  .migas {
-    margin-bottom: 20px;
-  }
-  .migas a {
-    color: var(--color-muted);
-  }
   .centro__nombre {
     font-family: var(--font-titulo);
-    font-size: 1.3rem;
-    margin-bottom: 4px;
+    font-weight: var(--titulo-peso);
+    font-size: 1.35rem;
+    color: var(--color-white);
   }
-  .centro__direccion {
-    color: var(--color-muted);
-    margin: 0;
+  .confirmar-claro {
+    color: #ffc2b8;
   }
   .centro__rejilla {
     display: grid;
-    gap: 40px;
+    gap: 56px;
     grid-template-columns: minmax(0, 1fr);
   }
   @media (min-width: 960px) {
     .centro__rejilla {
       grid-template-columns: minmax(0, 1fr) 360px;
-      gap: 56px;
+      gap: 80px;
       align-items: start;
     }
     .centro__lateral {
       position: sticky;
-      top: 100px;
+      top: 88px;
     }
   }
   .centro__descripcion {
-    font-size: 1.15rem;
-    margin-bottom: 40px;
-  }
-  .centro__principal h2 {
-    margin-top: 8px;
-  }
-  .tabla-envoltorio {
-    overflow-x: auto;
-    margin-bottom: 40px;
-    border-radius: var(--radio);
-    box-shadow: var(--sombra);
-  }
-  .horarios {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 15px;
-    background: var(--color-white);
-  }
-  .horarios th,
-  .horarios td {
-    padding: 12px 14px;
-    text-align: left;
-    border-bottom: 1px solid var(--color-borde);
-    white-space: nowrap;
-  }
-  .horarios thead th {
-    background: var(--color-primary);
-    color: var(--color-white);
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-  }
-  .horarios tbody th {
+    max-width: 60ch;
+    margin-bottom: 56px;
+    font-family: var(--font-titulo);
+    font-size: clamp(1.3rem, 1.15rem + 0.6vw, 1.6rem);
+    line-height: 1.4;
     color: var(--color-primary);
   }
-  .horarios tbody tr:nth-child(even) {
-    background: var(--color-surface);
+  .centro__principal h2 {
+    margin-bottom: 8px;
   }
-  /* En móvil cada grupo se muestra como una ficha en lugar de una fila */
-  @media (max-width: 639px) {
-    .horarios thead {
-      display: none;
-    }
-    .horarios,
-    .horarios tbody,
-    .horarios tr,
-    .horarios th,
-    .horarios td {
-      display: block;
-    }
-    .horarios tbody tr {
-      padding: 12px 0;
-      border-bottom: 1px solid var(--color-borde);
-    }
-    .horarios tbody th,
-    .horarios td {
-      border: 0;
-      padding: 2px 16px;
-      white-space: normal;
-    }
-    .horarios tbody th {
-      font-size: 1.05rem;
-      padding-bottom: 6px;
-    }
-    .horarios td {
-      display: flex;
-      gap: 8px;
-    }
-    .horarios td::before {
-      content: attr(data-etiqueta);
-      min-width: 72px;
-      font-size: 14px;
-      color: var(--color-text-soft);
+
+  .grupos {
+    list-style: none;
+    margin: 24px 0 64px;
+    padding: 0;
+    border-top: 1px solid var(--color-borde);
+  }
+  .grupo {
+    display: grid;
+    gap: 6px 24px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--color-borde);
+  }
+  @media (min-width: 640px) {
+    .grupo {
+      grid-template-columns: 200px 1fr auto;
+      align-items: baseline;
     }
   }
-  .plazas {
-    font-weight: 600;
-    color: var(--color-accent);
+  .grupo__dia {
+    display: flex;
+    flex-direction: column;
   }
-  .plazas--completo {
+  .grupo__dia-nombre {
+    font-family: var(--font-titulo);
+    font-weight: var(--titulo-peso);
+    font-size: 1.35rem;
+    color: var(--color-primary);
+  }
+  .grupo__hora {
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
     color: var(--color-text-soft);
   }
-  .centro__fotos {
+  .grupo__info {
+    display: flex;
+    flex-direction: column;
+  }
+  .grupo__nivel {
+    font-weight: 600;
+  }
+  .grupo__edades {
+    font-size: 15px;
+    color: var(--color-text-soft);
+  }
+  .grupo__plazas {
+    justify-self: start;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+  .grupo__plazas--completo {
+    color: var(--color-text-soft);
+  }
+
+  .centro__galeria {
+    margin-bottom: 64px;
+  }
+  .centro__galeria ul {
     list-style: none;
+    margin: 24px 0 0;
     padding: 0;
-    margin: 0 0 40px;
     display: grid;
-    gap: 10px;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
   }
-  .centro__fotos :global(.foto) {
-    border-radius: 6px;
+  .centro__galeria :global(.centro__foto) {
+    border-radius: var(--radio-foto);
   }
-  .centro__torneos {
-    display: grid;
-    gap: 12px;
-  }
+
   .centro__contacto {
-    padding: 24px;
+    padding: 28px;
     margin-bottom: 20px;
-    border-top: 3px solid var(--color-gold);
+    border-radius: var(--radio-foto);
+    background: var(--color-crema);
+    border-top: 1px solid var(--color-gold);
+  }
+  .centro__contacto .etiqueta {
+    margin: 0 0 8px;
   }
   .centro__contacto h2 {
-    font-size: 1.35rem;
+    font-size: 1.5rem;
+    margin-bottom: 8px;
   }
   .centro__boton {
     width: 100%;
-    margin-top: 10px;
+    margin-top: 8px;
   }
-  .centro__mapa {
-    border-radius: var(--radio);
-    overflow: hidden;
-    box-shadow: var(--sombra);
-  }
-  .centro__mapa iframe {
+  .centro__telefono {
     display: block;
-    border: 0;
+    margin-top: 14px;
+    text-align: center;
+    font-size: 15px;
+    color: var(--color-primary);
+  }
+  .centro__como-llegar {
+    margin-top: 14px;
+  }
+
+  .otros {
+    display: grid;
+    gap: 40px 28px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  @media (min-width: 760px) {
+    .otros {
+      grid-template-columns: repeat(3, 1fr);
+    }
   }
 </style>
