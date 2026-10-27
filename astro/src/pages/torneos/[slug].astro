@@ -1,4 +1,5 @@
 ---
+import { ruta } from '../../lib/rutas';
 import { getCollection, getEntry, render, type CollectionEntry } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Cartel from '../../components/Cartel.astro';
@@ -49,7 +50,7 @@ const despues = [
 
   <header class="contenedor torneo__cabecera">
     <nav class="migas" aria-label="Migas de pan">
-      <a href="/">Inicio</a><span aria-hidden="true">/</span><a href="/#torneos">Club y torneos</a>
+      <a href={ruta('/')}>Inicio</a><span aria-hidden="true">/</span><a href={ruta('/#torneos')}>Club y torneos</a>
     </nav>
     <p class="etiqueta">{tipoTexto} · {estado === 'proximo' ? 'Próximo' : estado === 'celebrado' ? 'Celebrado' : 'Cancelado'}</p>
     <h1>{nombre}</h1>
@@ -76,7 +77,7 @@ const despues = [
         <div>
           <dt class="rotulo">Lugar</dt>
           <dd>
-            {centro ? <a href={`/centros/${centro.id}/`}>{sitio}</a> : sitio}
+            {centro ? <a href={ruta(`/centros/${centro.id}/`)}>{sitio}</a> : sitio}
             <span class="torneo__direccion">{direccion}</span>
           </dd>
         </div>
@@ -100,7 +101,7 @@ const despues = [
                 </p>
               )}
               <a
-                href={inscripcion.tipo === 'formulario' ? '/#contacto' : inscripcion.url}
+                href={inscripcion.tipo === 'formulario' ? ruta('/#contacto') : inscripcion.url}
                 class="boton torneo__boton"
                 {...(inscripcion.tipo === 'externa' ? { target: '_blank', rel: 'noopener' } : {})}
               >

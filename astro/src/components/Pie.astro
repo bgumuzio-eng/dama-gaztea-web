@@ -1,4 +1,5 @@
 ---
+import { ruta } from '../lib/rutas';
 import Logo from './Logo.astro';
 import ajustes from '../data/ajustes.json';
 import { centrosActivos } from '../lib/datos';
@@ -21,7 +22,7 @@ const anio = new Date().getFullYear();
           {
             centros.map((c) => (
               <li>
-                <a href={`/centros/${c.id}/`}>
+                <a href={ruta(`/centros/${c.id}/`)}>
                   {c.data.nombre}, {c.data.localidad}
                 </a>
               </li>

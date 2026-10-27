@@ -1,4 +1,5 @@
 ---
+import { ruta } from '../lib/rutas';
 import Logo from './Logo.astro';
 
 // En la maqueta, las secciones que aún no tienen página apuntan a su bloque de la portada.
@@ -10,7 +11,7 @@ const menu = [
   { texto: 'Aprende', href: '/aprende/problemas/' },
   { texto: 'Contacto', href: '/#contacto' },
 ];
-const ruta = Astro.url.pathname;
+const actual = Astro.url.pathname;
 
 const tipografias = [
   { id: '1', nombre: 'Clásica', fuentes: 'Fraunces + Inter', familia: "'Fraunces Variable'" },
@@ -21,7 +22,7 @@ const tipografias = [
 
 <div class="maqueta" role="region" aria-label="Opciones de la maqueta">
   <div class="contenedor maqueta__fila">
-    <p class="maqueta__aviso"><strong>Maqueta para el club</strong> · fotos provisionales</p>
+    <p class="maqueta__aviso"><strong>Maqueta en revisión.</strong> Fotos y textos provisionales.</p>
     <div class="maqueta__tipos" role="group" aria-label="Elige la tipografía">
       <span class="maqueta__etiqueta">Tipografía</span>
       {
@@ -50,14 +51,14 @@ const tipografias = [
         {
           menu.map((m) => (
             <li>
-              <a href={m.href} aria-current={!m.href.startsWith('/#') && ruta.startsWith(m.href) ? 'page' : undefined}>
+              <a href={ruta(m.href)} aria-current={!m.href.startsWith('/#') && actual.startsWith(ruta(m.href)) ? 'page' : undefined}>
                 {m.texto}
               </a>
             </li>
           ))
         }
       </ul>
-      <a href="/#contacto" class="boton boton--pequeno cabecera__cta">Pide información</a>
+      <a href={ruta('/#contacto')} class="boton boton--pequeno cabecera__cta">Pide información</a>
     </nav>
   </div>
 </header>

@@ -1,4 +1,5 @@
 ---
+import { ruta } from '../../lib/rutas';
 import { getEntry, render, type CollectionEntry } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Foto from '../../components/Foto.astro';
@@ -35,7 +36,7 @@ const relacionadas = todas
   <article class="noticia">
     <header class="contenedor noticia__cabecera">
       <nav class="migas" aria-label="Migas de pan">
-        <a href="/">Inicio</a><span aria-hidden="true">/</span><a href="/#noticias">Noticias</a>
+        <a href={ruta('/')}>Inicio</a><span aria-hidden="true">/</span><a href={ruta('/#noticias')}>Noticias</a>
       </nav>
       <p class="etiqueta">{categoria}</p>
       <h1>{titulo}</h1>
@@ -113,7 +114,7 @@ const relacionadas = todas
     <div class="contenedor">
       <div class="seccion__cabecera">
         <h2 class="titulo-dorado">También te puede interesar</h2>
-        <a href="/#noticias" class="enlace-flecha">Todas las noticias</a>
+        <a href={ruta('/#noticias')} class="enlace-flecha">Todas las noticias</a>
       </div>
       <ul class="relacionadas">
         {

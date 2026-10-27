@@ -1,4 +1,5 @@
 ---
+import { ruta } from '../lib/rutas';
 // Mapa compacto: la costa y la ría en una sola línea, con cada centro marcado y etiquetado.
 // Es un SVG propio: no carga nada externo ni pone cookies.
 import type { CollectionEntry } from 'astro:content';
@@ -44,7 +45,7 @@ const lado: Record<string, 'izq' | 'der'> = { 'getxo-las-arenas': 'izq', 'sestao
         const ancla = izq ? 'end' : 'start';
         const ty = abajo ? cy + 18 : cy;
         return (
-          <a href={`/centros/${c.id}/`} class:list={['mapa__punto', { activo: c.id === destacado }]}>
+          <a href={ruta(`/centros/${c.id}/`)} class:list={['mapa__punto', { activo: c.id === destacado }]}>
             <circle cx={cx} cy={cy} r="7" class="mapa__marca" />
             <text x={tx} y={ty - 4} text-anchor={ancla} class="mapa__localidad">
               {c.data.localidad}

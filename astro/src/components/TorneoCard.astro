@@ -1,4 +1,5 @@
 ---
+import { ruta } from '../lib/rutas';
 import { getEntry, type CollectionEntry } from 'astro:content';
 import { diaMes, fechaLarga, isoDia, TIPOS_TORNEO } from '../lib/formato';
 interface Props {
@@ -19,7 +20,7 @@ const { dia, mes } = diaMes(fecha);
   </time>
   <div class="torneo-card__info">
     <p class="etiqueta">{perteneceAlCircuito ? `Circuito · Prueba ${numeroDePrueba}` : TIPOS_TORNEO[tipo]}</p>
-    <h3><a href={`/torneos/${torneo.id}/`}>{nombre}</a></h3>
+    <h3><a href={ruta(`/torneos/${torneo.id}/`)}>{nombre}</a></h3>
     <p class="torneo-card__lugar">
       {fechaPorConfirmar && <span class="confirmar">Fecha (confirmar) · </span>}
       {horaInicio} h · {centro ? `${centro.data.nombre}, ${centro.data.localidad}` : lugar.texto}

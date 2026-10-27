@@ -1,4 +1,5 @@
 ---
+import { ruta } from '../lib/rutas';
 // Tarjeta de noticia: foto 3:2, etiqueta dorada, titular Fraunces 22 px, fecha en gris.
 // Toda la tarjeta es enlace; sombra solo al pasar el ratón.
 import type { CollectionEntry } from 'astro:content';
@@ -15,7 +16,7 @@ const { titulo, fecha, categoria, imagenPrincipal } = noticia.data;
   <Foto imagen={imagenPrincipal} proporcion="3 / 2" ancho={800} class="noticia-card__foto" />
   <div class="noticia-card__cuerpo">
     <p class="etiqueta">{categoria}</p>
-    <h3><a href={`/noticias/${noticia.id}/`}>{titulo}</a></h3>
+    <h3><a href={ruta(`/noticias/${noticia.id}/`)}>{titulo}</a></h3>
     <time datetime={isoDia(fecha)}>{fechaLarga(fecha)}</time>
   </div>
 </article>

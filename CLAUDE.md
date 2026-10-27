@@ -9,7 +9,7 @@ Estado: fase 0 (validación). Propuesta pendiente de aprobación por el club; el
 Este proyecto no tiene ninguna relación con los proyectos de RIF (web de RIF, rif-pipeline, rif-startup-agent ni nada bajo `Desktop/Claude`).
 
 - Ubicación local: `C:\Users\bgumu\Desktop\DamaGaztea`, con su propio repositorio git. Nunca crear ni mover archivos de este proyecto dentro de `Desktop/Claude`, ni al revés.
-- Repositorio remoto (cuando el club apruebe el stack): `dama-gaztea-web` en GitHub, propio y separado de los de RIF.
+- Repositorio remoto: `bgumuzio-eng/dama-gaztea-web` en GitHub, propio y separado de los de RIF.
 - Despliegue: proyecto propio en Cloudflare Pages, sin compartir proyecto, dominio, Workers, variables de entorno ni tokens con RIF.
 - Cuentas y servicios (Sanity, Resend, Google Sheets, Turnstile, Search Console): siempre los de Dama Gaztea. No reutilizar credenciales, `.env`, hosting (Hostinger) ni configuración de RIF.
 - Ante cualquier duda sobre qué cuenta o proyecto usar, preguntar antes de configurar o desplegar.
@@ -20,6 +20,16 @@ Este proyecto no tiene ninguna relación con los proyectos de RIF (web de RIF, r
 - Integración `@sanity/astro`; imágenes vía Sanity Image CDN con `srcset` y AVIF/WebP.
 - Formularios: Cloudflare Worker (validación, Turnstile, Resend, Google Sheets API).
 - Circuito: CSV publicado de Google Sheets leído en build; webhook de Sanity y botón manual para redeploy.
+
+## Publicación temporal de la maqueta
+
+- Repositorio: https://github.com/bgumuzio-eng/dama-gaztea-web (remoto `origin`, público).
+- Dirección: https://bgumuzio-eng.github.io/dama-gaztea-web/ (GitHub Pages).
+- Cada push a `main` se compila y se publica solo con `.github/workflows/deploy.yml` (withastro/action, carpeta `astro`). No hacer push a `main` de nada que no deba verse.
+- Por esa dirección, `astro.config.mjs` lleva `site` y `base: '/dama-gaztea-web'`. Toda ruta interna debe pasar por `ruta()` de `src/lib/rutas.ts` (enlaces) o por el componente `Foto` (imágenes); nunca escribir `href="/..."` a mano.
+- Es una publicación temporal para enseñar la maqueta. La web definitiva irá en una cuenta y dominio del club (Cloudflare Pages), no en este GitHub Pages: entonces se cambia `site` y se quita `base`.
+- Franja superior "Maqueta en revisión. Fotos y textos provisionales." en `Cabecera.astro`: solo para la maqueta, se retira al lanzar.
+- Datos pendientes de que los confirme Álex: `docs/pendiente-de-confirmar.md`. No tocar los textos marcados "(confirmar)".
 
 ## Problemas interactivos (fase 2, sección 9 de la especificación)
 

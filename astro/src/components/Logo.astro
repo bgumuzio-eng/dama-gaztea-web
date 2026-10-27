@@ -1,4 +1,5 @@
 ---
+import { ruta } from '../lib/rutas';
 // Logotipo provisional (apartado 9 de la dirección de diseño): monograma DG en círculo dorado.
 interface Props {
   eslogan?: boolean;
@@ -7,7 +8,7 @@ interface Props {
 const { eslogan = false, tono = 'claro' } = Astro.props;
 ---
 
-<a href="/" class:list={['logo', `logo--${tono}`]} aria-label="Dama Gaztea Ajedrez, inicio">
+<a href={ruta('/')} class:list={['logo', `logo--${tono}`]} aria-label="Dama Gaztea Ajedrez, inicio">
   <span class="logo__monograma" aria-hidden="true">DG</span>
   <span class="logo__texto">
     <span class="logo__nombre">DAMA GAZTEA</span>

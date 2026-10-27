@@ -1,4 +1,5 @@
 ---
+import { ruta } from '../lib/rutas';
 // Tarjeta de centro: foto 3:2, localidad en dorado, nombre y una línea por grupo con día y hora.
 import type { CollectionEntry } from 'astro:content';
 import Foto from './Foto.astro';
@@ -12,7 +13,7 @@ const { nombre, localidad, grupos, fotos } = centro.data;
 <article class="centro-card">
   <Foto imagen={fotos[0] ?? { alt: nombre }} proporcion="3 / 2" ancho={800} class="centro-card__foto" />
   <p class="etiqueta">{localidad}</p>
-  <h3><a href={`/centros/${centro.id}/`}>{nombre}</a></h3>
+  <h3><a href={ruta(`/centros/${centro.id}/`)}>{nombre}</a></h3>
   <ul>
     {
       grupos.map((g) => (

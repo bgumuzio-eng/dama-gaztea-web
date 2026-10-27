@@ -1,0 +1,46 @@
+# Publicación TEMPORAL de la maqueta en GitHub Pages: https://bgumuzio-eng.github.io/dama-gaztea-web/
+# Cada push a main compila la web (carpeta astro) y la publica sola.
+# La web definitiva irá en una cuenta y dominio del club, no aquí.
+name: Publicar maqueta en GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v7
+
+      - name: Activar GitHub Pages si aún no lo está
+        uses: actions/configure-pages@v6
+        with:
+          enablement: true
+
+      - name: Compilar la web con Astro
+        uses: withastro/action@v6
+        with:
+          path: ./astro
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publicar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

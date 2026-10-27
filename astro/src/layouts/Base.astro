@@ -1,4 +1,5 @@
 ---
+import { ruta } from '../lib/rutas';
 import '@fontsource-variable/fraunces/opsz.css';
 import '@fontsource-variable/fraunces/opsz-italic.css';
 import '@fontsource-variable/inter';
@@ -29,12 +30,13 @@ const tituloCompleto = titulo ? `${titulo} | ${ajustes.nombreAcademia}` : `${aju
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{tituloCompleto}</title>
     <meta name="description" content={descripcion} />
-    <meta name="theme-color" content="#14532D" />    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#14532D" />
+    <meta property="og:type" content="website" />
     <meta property="og:title" content={tituloCompleto} />
     <meta property="og:description" content={descripcion} />
     <meta property="og:locale" content="es_ES" />
     <meta name="robots" content="noindex" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href={ruta('/favicon.svg')} type="image/svg+xml" />
     <script is:inline>
       // Tipografía elegida en la maqueta: ?tipo=2 en la URL o la última elegida.
       (function () {

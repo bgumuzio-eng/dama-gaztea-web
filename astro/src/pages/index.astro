@@ -1,4 +1,5 @@
 ---
+import { ruta } from '../lib/rutas';
 import Base from '../layouts/Base.astro';
 import Foto from '../components/Foto.astro';
 import IconoPieza from '../components/IconoPieza.astro';
@@ -59,7 +60,7 @@ const porConfirmar = new Set(['Alumnos campeones de España', 'Simultáneas con 
 ---
 
 <Base>
-  <link slot="head" rel="preload" href="/img/provisionales/hero-ninos-biblioteca.jpg" as="image" fetchpriority="high" />
+  <link slot="head" rel="preload" href={ruta('/img/provisionales/hero-ninos-biblioteca.jpg')} as="image" fetchpriority="high" />
 
   <section class="hero sobre-foto" aria-labelledby="hero-titulo">
     <div class="hero__escena">
@@ -169,7 +170,7 @@ const porConfirmar = new Set(['Alumnos campeones de España', 'Simultáneas con 
               <article class="centro">
                 <p class="rotulo">{c.data.localidad}</p>
                 <h3>
-                  <a href={`/centros/${c.id}/`}>{c.data.nombre}</a>
+                  <a href={ruta(`/centros/${c.id}/`)}>{c.data.nombre}</a>
                 </h3>
                 <ul>
                   {c.data.grupos.map((g) => (
@@ -219,7 +220,7 @@ const porConfirmar = new Set(['Alumnos campeones de España', 'Simultáneas con 
       <div class="torneos__panel">
         <p class="antetitulo">Próximos torneos</p>
         {torneos.map((t, i) => <TorneoCard torneo={t} avisoPlazo={i === 0} tono="oscuro" />)}
-        <a href={`/torneos/${torneos[0]?.id}/`} class="boton boton--claro torneos__boton">Ver el torneo</a>
+        <a href={ruta(`/torneos/${torneos[0]?.id}/`)} class="boton boton--claro torneos__boton">Ver el torneo</a>
       </div>
     </div>
   </section>
@@ -308,7 +309,7 @@ const porConfirmar = new Set(['Alumnos campeones de España', 'Simultáneas con 
                   Semana del {fechaLarga(problema.data.destacadoSemana!)}. Resuélvelo moviendo las piezas y sigue con más problemas por
                   niveles.
                 </p>
-                <a href={`/aprende/problemas/?p=${problema.id}`} class="boton">
+                <a href={ruta(`/aprende/problemas/?p=${problema.id}`)} class="boton">
                   Resolver en el tablero
                 </a>
               </div>

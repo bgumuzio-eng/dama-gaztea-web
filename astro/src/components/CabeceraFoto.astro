@@ -1,4 +1,5 @@
 ---
+import { ruta } from '../lib/rutas';
 // Cabecera de página interior: foto a sangre con degradado verde bosque desde abajo y titular encima.
 import Foto from './Foto.astro';
 interface Props {
@@ -22,7 +23,7 @@ const { imagen, antetitulo, titulo, migas, posicion = 'center', compacta = false
         migas.map((m, i) => (
           <>
             {i > 0 && <span aria-hidden="true">/</span>}
-            {m.href ? <a href={m.href}>{m.texto}</a> : <span aria-current="page">{m.texto}</span>}
+            {m.href ? <a href={ruta(m.href)}>{m.texto}</a> : <span aria-current="page">{m.texto}</span>}
           </>
         ))
       }

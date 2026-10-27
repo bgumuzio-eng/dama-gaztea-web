@@ -1,4 +1,5 @@
 ---
+import { ruta } from '../lib/rutas';
 // Fotografía con pie "foto provisional" mientras sea de Unsplash (src bajo /img/provisionales/).
 // Si no hay src se usa una provisional genérica: en la maqueta no queda ningún hueco gris.
 interface Props {
@@ -28,7 +29,7 @@ const estilo = [proporcion && `aspect-ratio:${proporcion}`, `object-position:${p
 
 <figure class:list={['foto', clase]}>
   <img
-    src={src}
+    src={ruta(src)}
     alt={imagen.alt}
     style={estilo}
     width={ancho}
