@@ -16,6 +16,12 @@
   background: repeating-conic-gradient(var(--casilla-oscura) 0 25%, var(--casilla-clara) 0 50%) 0 0 / 25% 25%;
 }
 
+/* chessground redondea el tablero a múltiplos de 8 px; se estira para llenar el marco */
+.tablero cg-container {
+  width: 100% !important;
+  height: 100% !important;
+}
+
 .tablero cg-board {
   background: repeating-conic-gradient(var(--casilla-oscura) 0 25%, var(--casilla-clara) 0 50%) 0 0 / 25% 25%;
 }

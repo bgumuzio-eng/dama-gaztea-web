@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+import CabeceraFoto from '../../components/CabeceraFoto.astro';
 import TableroProblema from '../../components/TableroProblema.astro';
 import ajustes from '../../data/ajustes.json';
 import { problemaDeLaSemana, problemasPublicados } from '../../lib/datos';
@@ -9,71 +10,66 @@ const semana = await problemaDeLaSemana();
 ---
 
 <Base titulo="Problemas de ajedrez" descripcion="Resuelve problemas de táctica en un tablero interactivo: mates, clavadas, horquillas y finales por niveles.">
-  <header class="problemas__cabecera">
-    <div class="contenedor">
-      <nav class="migas pequeno" aria-label="Migas de pan">
-        <a href="/">Inicio</a> <span aria-hidden="true">/</span> <span>Aprende</span>
-      </nav>
-      <h1>Problemas</h1>
-      <p>
-        Mueve las piezas y encuentra la mejor jugada. Elige nivel y tema, pide una pista si te atascas y mira cuánto dura tu
-        racha.
-        {semana && <> Empezamos por el <strong>problema de la semana</strong>, preparado por el profesor.</>}
-      </p>
-    </div>
-  </header>
+  <CabeceraFoto
+    imagen={{ src: '/img/provisionales/piezas-madera-luz.jpg', alt: 'Piezas de ajedrez de madera con luz cálida' }}
+    antetitulo="Aprende"
+    titulo="Problemas de ajedrez"
+    migas={[{ texto: 'Inicio', href: '/' }, { texto: 'Aprende' }, { texto: 'Problemas' }]}
+    posicion="50% 60%"
+    compacta
+  >
+    <p class="cabecera-foto__sub">
+      Mueve las piezas y encuentra la mejor jugada. Elige nivel y tema, pide una pista si te atascas y mira cuánto dura tu racha.
+      {semana && <> Empezamos por el problema de la semana.</>}
+    </p>
+  </CabeceraFoto>
 
-  <div class="contenedor seccion">
-    <TableroProblema problemas={problemas} inicial={semana?.id} />
+  <div class="problemas">
+    <div class="contenedor">
+      <TableroProblema problemas={problemas} inicial={semana?.id} />
+    </div>
   </div>
 
-  <section class="seccion seccion--alterna">
+  <section class="seccion">
     <div class="contenedor creditos">
       <div>
         <h2 class="titulo-dorado">¿Quieres jugar partidas online?</h2>
-        <p>Únete al equipo del club en Lichess: torneos internos, partidas entre compañeros y análisis con el profesor.</p>
+        <p class="texto-suave">Únete al equipo del club en Lichess: torneos internos, partidas entre compañeros y análisis con el profesor.</p>
         <a href={ajustes.equipoLichess} class="boton" rel="noopener">Equipo Dama Gaztea en Lichess</a>
       </div>
-      <p class="pequeno texto-suave">
-        Además de los problemas de nuestras clases, usamos problemas de la
-        <a href="https://database.lichess.org/#puzzles" rel="noopener">base abierta de Lichess</a>, publicada con licencia
-        CC0.
+      <p class="creditos__nota">
+        Además de los problemas de nuestras clases, usamos problemas de la{' '}
+        <a href="https://database.lichess.org/#puzzles" rel="noopener">base abierta de Lichess</a>, publicada con licencia CC0.
       </p>
     </div>
   </section>
 </Base>
 
 <style>
-  .problemas__cabecera {
-    background: var(--color-primary) var(--patron-tablero-claro);
-    color: var(--color-muted);
-    padding-block: 28px 40px;
+  /* Fondo de la página en crema, como pide la dirección de diseño */
+  .problemas {
+    padding-block: 48px var(--separacion);
+    background: var(--color-crema);
   }
-  .problemas__cabecera h1 {
-    color: var(--color-white);
-  }
-  .problemas__cabecera p {
-    max-width: 62ch;
-    margin: 0;
-  }
-  .problemas__cabecera strong {
-    color: var(--color-white);
-  }
-  .migas {
-    margin-bottom: 20px;
-  }
-  .migas a {
-    color: var(--color-muted);
+  @media (min-width: 960px) {
+    .problemas {
+      padding-top: 64px;
+    }
   }
   .creditos {
     display: grid;
-    gap: 24px;
+    gap: 32px;
     align-items: end;
   }
   @media (min-width: 900px) {
     .creditos {
       grid-template-columns: 2fr 1fr;
-      gap: 56px;
+      gap: 80px;
     }
+  }
+  .creditos__nota {
+    margin: 0;
+    font-size: 14px;
+    color: var(--color-text-soft);
   }
 </style>

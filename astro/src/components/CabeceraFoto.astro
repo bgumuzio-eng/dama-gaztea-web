@@ -7,11 +7,12 @@ interface Props {
   titulo: string;
   migas: { texto: string; href?: string }[];
   posicion?: string;
+  compacta?: boolean;
 }
-const { imagen, antetitulo, titulo, migas, posicion = 'center' } = Astro.props;
+const { imagen, antetitulo, titulo, migas, posicion = 'center', compacta = false } = Astro.props;
 ---
 
-<header class="cabecera-foto sobre-foto">
+<header class:list={['cabecera-foto', 'sobre-foto', { 'cabecera-foto--compacta': compacta }]}>
   <Foto imagen={imagen} class="cabecera-foto__img" posicion={posicion} prioridad ancho={2000} pie={false} />
   <div class="cabecera-foto__velo" aria-hidden="true"></div>
   <span class="cabecera-foto__provisional">Foto provisional</span>
@@ -47,6 +48,16 @@ const { imagen, antetitulo, titulo, migas, posicion = 'center' } = Astro.props;
     .cabecera-foto {
       min-height: 60vh;
       min-height: 60svh;
+    }
+  }
+  .cabecera-foto--compacta {
+    min-height: 40vh;
+    min-height: 40svh;
+  }
+  @media (min-width: 960px) {
+    .cabecera-foto--compacta {
+      min-height: 44vh;
+      min-height: 44svh;
     }
   }
   .cabecera-foto :global(.cabecera-foto__img) {
