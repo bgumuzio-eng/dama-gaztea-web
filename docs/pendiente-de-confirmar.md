@@ -30,3 +30,7 @@ Datos de la maqueta sacados de damagaztea.com que no están claros o no aparecen
 
 13. **Fotos del club.** Todas las fotos de la maqueta son provisionales (Unsplash). Hacen falta entre 30 y 50 fotos propias con permiso de imagen: clases, torneos, entregas de premios y campus.
 14. **Redes sociales.** Faltan los enlaces de Instagram, TikTok y YouTube.
+
+## Club
+
+15. **Equipo online del club.** El botón para unirse al equipo del club está retirado hasta que lo crees. Cuando exista, pásame el enlace y el nombre del equipo y lo volvemos a poner.

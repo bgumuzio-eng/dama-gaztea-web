@@ -40,10 +40,11 @@ Este proyecto no tiene ninguna relación con los proyectos de RIF (web de RIF, r
 - Problema del día: el de fecha de hoy (Madrid) o uno no usado del fondo común; las elecciones se guardan en `historial-problemas.json` solo con `GUARDAR_HISTORIAL=1` (lo pone el workflow). Fechas futuras: no se publican.
 - Páginas: `/aprende/problemas/` (problema del día y modo entrenamiento con `?nivel=` y `?tema=`; `?p=<id>` abre uno), `/aprende/problemas/archivo/`, `/aprende/problemas/problemas.json` (lo descarga el entrenador). Problema del día también en portada.
 - Tablero interactivo en cliente: chess.js (reglas) + chessground (tablero). Pista, ver solución, aciertos y rachas en localStorage, sin registro.
-- Distintivos: solo `propio` lleva "De las clases de Dama Gaztea". Los de `lichess` se ven igual que los propios, sin mención de la fuente: la palabra Lichess no debe aparecer en ningún texto, título, alt ni tema publicado (al navegador solo llega `propio: true/false`, ver `paraLaWeb`). La procedencia CC0 se cita en `/aviso-legal/`. Excepción a revisar: el botón del equipo online del club enlaza a lichess.org/team (texto sin la palabra).
+- Distintivos: solo `propio` lleva "De las clases de Dama Gaztea". Los de `lichess` se ven igual que los propios, sin mención de la fuente: la palabra Lichess no debe aparecer en ningún texto, título, alt ni tema publicado (al navegador solo llega `propio: true/false`, ver `paraLaWeb`). La procedencia CC0 se cita en `/aviso-legal/`.
+- Equipo online del club: el bloque "¿Quieres jugar partidas online?" está retirado hasta que Álex cree el equipo; entonces se vuelve a poner en `/aprende/problemas/` con el nombre del club (y su enlace en `ajustes.json`).
 - Importación de Lichess: `scripts/importar-lichess.mjs` (300 por nivel: fácil < 1200, medio 1200 a 1700, difícil > 1700) o el workflow manual "Importar problemas de Lichess", que deja el CSV como artifact. El 31-10-2026 este equipo no conseguía conectar con lichess.org ni con docs.google.com; si vuelve a pasar, usar el workflow.
 - Cuando entre Sanity, la hoja se migra a un tipo de documento `problema` equivalente y el cargador se sustituye por una consulta.
-- Fuera de alcance: cuenta de alumno (fase 3); jugar online contra personas (descartado, se enlaza el equipo del club en Lichess).
+- Fuera de alcance: cuenta de alumno (fase 3); jugar online contra personas (descartado; se enlazará el equipo online del club cuando exista).
 
 ## Maqueta de fase 0 (`/astro`)
 

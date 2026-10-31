@@ -2,7 +2,6 @@
 import Base from '../../../layouts/Base.astro';
 import CabeceraFoto from '../../../components/CabeceraFoto.astro';
 import TableroProblema from '../../../components/TableroProblema.astro';
-import ajustes from '../../../data/ajustes.json';
 import { calendarioProblemas } from '../../../lib/datos';
 import { NIVELES, diaDeCalendario, fechaLarga } from '../../../lib/formato';
 import { TEMAS_PROBLEMA } from '../../../lib/problemas/temas';
@@ -101,15 +100,6 @@ const recientes = archivo.slice(1, 6);
     </div>
   </section>
 
-  <section class="seccion seccion--crema">
-    <div class="contenedor creditos">
-      <div>
-        <h2 class="titulo-dorado">¿Quieres jugar partidas online?</h2>
-        <p class="texto-suave">Únete al equipo online del club: torneos internos, partidas entre compañeros y análisis con el profesor.</p>
-        <a href={ajustes.equipoLichess} class="boton" rel="noopener">Equipo online de Dama Gaztea</a>
-      </div>
-    </div>
-  </section>
 </Base>
 
 <style>
@@ -123,8 +113,7 @@ const recientes = archivo.slice(1, 6);
       padding-top: 64px;
     }
   }
-  .entrena,
-  .creditos {
+  .entrena {
     display: grid;
     gap: 48px;
   }
@@ -132,9 +121,6 @@ const recientes = archivo.slice(1, 6);
     .entrena {
       grid-template-columns: 3fr 2fr;
       gap: 80px;
-    }
-    .creditos {
-      max-width: 760px;
     }
   }
   .niveles,
