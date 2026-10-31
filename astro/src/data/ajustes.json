@@ -15,6 +15,7 @@
   },
   "direccionFiscal": "Pendiente",
   "hojaCircuito": "",
+  "hojaProblemas": [],
   "mostrarTarifas": false,
   "equipoLichess": "https://lichess.org/team",
   "profesor": "Álex Rodríguez"

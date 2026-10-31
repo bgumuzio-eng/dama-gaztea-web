@@ -4,6 +4,8 @@
 import { defineCollection, reference } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
+import { cargadorProblemas } from './lib/problemas/cargador';
+import { NIVELES_PROBLEMA, TEMAS_PROBLEMA } from './lib/problemas/temas';
 
 // En Sanity será un asset de imagen con recorte; en la maqueta, src vacío muestra un hueco de foto.
 const imagen = z.object({
@@ -18,11 +20,6 @@ export const CATEGORIAS = [
 export const TEMAS_VIDEO = [
   'Aperturas', 'Táctica y combinaciones', 'Problemas de mate', 'Finales', 'Estrategia',
   'Partidas históricas', 'Análisis', 'Trucos y curiosidades', 'Clases', 'Partidas de torneos',
-] as const;
-
-export const TEMAS_PROBLEMA = [
-  'mate en 1', 'mate en 2', 'mate en 3', 'mate del pasillo', 'clavada', 'horquilla', 'ataque doble',
-  'enfilada', 'descubierta', 'jaque doble', 'desviación', 'sacrificio', 'finales',
 ] as const;
 
 const noticias = defineCollection({
@@ -105,21 +102,19 @@ const videos = defineCollection({
   }),
 });
 
+// Los problemas no viven en ficheros: se leen de la hoja de Google Sheets en cada compilación (lib/problemas/cargador.ts).
 const problemas = defineCollection({
-  loader: glob({ pattern: '**/*.json', base: './src/content/problemas' }),
+  loader: cargadorProblemas(),
   schema: z.object({
-    titulo: z.string().default(''),
+    id: z.string(),
+    titulo: z.string(),
     posicionFEN: z.string(),
     enunciado: z.string(),
     solucionJugadas: z.array(z.string()).min(1),
-    solucion: z.string().default(''),
-    nivel: z.enum(['facil', 'medio', 'dificil']),
-    tema: z.array(z.enum(TEMAS_PROBLEMA)).default([]),
+    nivel: z.enum(NIVELES_PROBLEMA),
+    tema: z.array(z.enum(TEMAS_PROBLEMA)),
     origen: z.enum(['propio', 'lichess']),
-    idLichess: z.string().optional(),
-    puntuacionLichess: z.number().optional(),
-    destacadoSemana: z.coerce.date().optional(),
-    publicado: z.boolean().default(true),
+    fechaPublicacion: z.string().optional(),
   }),
 });
 

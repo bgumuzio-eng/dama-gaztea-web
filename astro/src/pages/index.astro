@@ -9,13 +9,13 @@ import Mapa from '../components/Mapa.astro';
 import TableroFEN from '../components/TableroFEN.astro';
 import FormularioContacto from '../components/FormularioContacto.astro';
 import ajustes from '../data/ajustes.json';
-import { centrosActivos, noticiasPublicadas, problemaDeLaSemana, torneosProximos } from '../lib/datos';
-import { enlaceWhatsApp, fechaLarga } from '../lib/formato';
+import { calendarioProblemas, centrosActivos, noticiasPublicadas, torneosProximos } from '../lib/datos';
+import { diaDeCalendario, enlaceWhatsApp, fechaLarga } from '../lib/formato';
 
 const noticias = (await noticiasPublicadas()).slice(0, 4);
 const torneos = await torneosProximos();
 const centros = await centrosActivos();
-const problema = await problemaDeLaSemana();
+const { delDia: problema, hoy } = await calendarioProblemas();
 
 // Datos de damagaztea.com; lo no verificado lleva (confirmar)
 const cifras = [
@@ -300,16 +300,16 @@ const porConfirmar = new Set(['Alumnos campeones de España', 'Simultáneas con 
           problema && (
             <article class="aprende__tarjeta semana">
               <div class="aprende__media semana__tablero">
-                <TableroFEN fen={problema.data.posicionFEN} etiqueta={`Posición del problema de la semana: ${problema.data.enunciado}`} />
+                <TableroFEN fen={problema.posicionFEN} etiqueta={`Posición del problema del día: ${problema.enunciado}`} />
               </div>
               <div>
-                <p class="etiqueta">Problema de la semana</p>
-                <h3>{problema.data.enunciado}</h3>
+                <p class="etiqueta">Problema del día</p>
+                <h3>{problema.enunciado}</h3>
                 <p class="texto-suave">
-                  Semana del {fechaLarga(problema.data.destacadoSemana!)}. Resuélvelo moviendo las piezas y sigue con más problemas por
-                  niveles.
+                  {fechaLarga(diaDeCalendario(hoy))}. Cada día, uno nuevo: resuélvelo moviendo las piezas y sigue con más problemas por
+                  nivel y tema.
                 </p>
-                <a href={ruta(`/aprende/problemas/?p=${problema.id}`)} class="boton">
+                <a href={ruta('/aprende/problemas/')} class="boton">
                   Resolver en el tablero
                 </a>
               </div>

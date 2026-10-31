@@ -1,0 +1,12 @@
+{
+  "name": "dama-gaztea-scripts",
+  "type": "module",
+  "private": true,
+  "description": "Scripts de mantenimiento de la web de Dama Gaztea (importación de Lichess, migración de Blogger)",
+  "scripts": {
+    "importar-lichess": "node importar-lichess.mjs"
+  },
+  "dependencies": {
+    "chess.js": "^1.4.0"
+  }
+}

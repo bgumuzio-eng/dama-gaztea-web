@@ -8,3 +8,4 @@ dist/
 .wrangler/
 .DS_Store
 Thumbs.db
+scripts/salida/

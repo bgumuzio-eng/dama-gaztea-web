@@ -1,5 +1,6 @@
 // Consultas comunes. Con Sanity se sustituirán por consultas GROQ equivalentes.
 import { getCollection } from 'astro:content';
+import { calcularCalendario, guardarHistorial, hoyEnMadrid, leerHistorial } from './problemas/calendario';
 
 export const noticiasPublicadas = async () =>
   (await getCollection('noticias', ({ data }) => data.estado === 'publicada')).sort(
@@ -14,17 +15,21 @@ export const torneosProximos = async () =>
 export const centrosActivos = async () =>
   (await getCollection('centros', ({ data }) => data.activo)).sort((a, b) => a.data.orden - b.data.orden);
 
-export const problemasPublicados = async () => {
-  const orden = { facil: 0, medio: 1, dificil: 2 };
-  return (await getCollection('problemas', ({ data }) => data.publicado)).sort(
-    (a, b) =>
-      orden[a.data.nivel] - orden[b.data.nivel] ||
-      (a.data.origen === 'propio' ? -1 : 0) - (b.data.origen === 'propio' ? -1 : 0),
-  );
-};
+// Problema del día, archivo y modo entrenamiento salen del mismo cálculo (lib/problemas/calendario.ts),
+// que se hace una sola vez por compilación.
+let calendario: ReturnType<typeof calcular> | undefined;
 
-// El problema de la semana es el problema propio con la fecha de destacado más reciente.
-export const problemaDeLaSemana = async () =>
-  (await getCollection('problemas', ({ data }) => data.publicado && data.origen === 'propio' && !!data.destacadoSemana)).sort(
-    (a, b) => b.data.destacadoSemana!.getTime() - a.data.destacadoSemana!.getTime(),
-  )[0];
+async function calcular() {
+  const orden = { facil: 0, medio: 1, dificil: 2 };
+  const problemas = (await getCollection('problemas'))
+    .map((p) => p.data)
+    .sort((a, b) => orden[a.nivel] - orden[b.nivel] || (a.origen === 'propio' ? -1 : 0) - (b.origen === 'propio' ? -1 : 0));
+  const previo = leerHistorial();
+  const resultado = calcularCalendario(problemas, previo, hoyEnMadrid());
+  if (process.env.GUARDAR_HISTORIAL === '1' && JSON.stringify(resultado.historial) !== JSON.stringify(previo)) {
+    guardarHistorial(resultado.historial);
+  }
+  return resultado;
+}
+
+export const calendarioProblemas = () => (calendario ??= calcular());

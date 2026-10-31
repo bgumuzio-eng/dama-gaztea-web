@@ -26,18 +26,23 @@ Este proyecto no tiene ninguna relación con los proyectos de RIF (web de RIF, r
 - Repositorio: https://github.com/bgumuzio-eng/dama-gaztea-web (remoto `origin`, público).
 - Dirección: https://bgumuzio-eng.github.io/dama-gaztea-web/ (GitHub Pages).
 - Cada push a `main` se compila y se publica solo con `.github/workflows/deploy.yml` (withastro/action, carpeta `astro`). No hacer push a `main` de nada que no deba verse.
+- El mismo workflow se ejecuta cada día a las 06:00 de Madrid (dos cron en UTC y el trabajo `hora` deja pasar el que toca) y a mano con `workflow_dispatch`. Esa compilación confirma en `main` el fichero `astro/src/data/historial-problemas.json` (commit de github-actions[bot]): hacer `git pull` antes de trabajar.
 - Por esa dirección, `astro.config.mjs` lleva `site` y `base: '/dama-gaztea-web'`. Toda ruta interna debe pasar por `ruta()` de `src/lib/rutas.ts` (enlaces) o por el componente `Foto` (imágenes); nunca escribir `href="/..."` a mano.
 - Es una publicación temporal para enseñar la maqueta. La web definitiva irá en una cuenta y dominio del club (Cloudflare Pages), no en este GitHub Pages: entonces se cambia `site` y se quita `base`.
 - Franja superior "Maqueta en revisión. Fotos y textos provisionales." en `Cabecera.astro`: solo para la maqueta, se retira al lanzar.
 - Datos pendientes de que los confirme Álex: `docs/pendiente-de-confirmar.md`. No tocar los textos marcados "(confirmar)".
 
-## Problemas interactivos (fase 2, sección 9 de la especificación)
+## Problemas interactivos (sección 9 de la especificación)
 
-- Tablero interactivo en cliente: chess.js (reglas) + chessground (tablero). Sin servidor. Stockfish solo si se añade "jugar contra la máquina".
-- El visitante mueve; se valida cada jugada contra `solucionJugadas` (SAN) y la web responde con la jugada del rival. Pista (iluminar pieza), ver solución, aciertos y rachas en localStorage, sin registro.
-- Niveles `facil` / `medio` / `dificil`; filtro por tema.
-- Origen `propio` (panel, distintivo "De las clases de Dama Gaztea") o `lichess` (importación CC0 por script, JSON en el repo, convertir UCI a SAN y aplicar la primera jugada del rival).
-- El problema de la semana es un problema propio destacado en el mismo tablero.
+- Fuente: hoja de Google Sheets de Álex, con pestañas `propios` y `lichess` y columnas id, fen, solucion (notación española, con las respuestas del rival), nivel, tema, titulo, enunciado, origen, fecha_publicacion, notas. Guía para Álex: `docs/guia-problemas.md`.
+- Las URL de las pestañas publicadas como CSV van en `hojaProblemas` de `astro/src/data/ajustes.json`. Sin URL, se usan `astro/src/data/problemas-ejemplo.csv` y se avisa en el registro. Variables para pruebas: `PROBLEMAS_CSV` (URL separadas por espacios) y `PROBLEMAS_HOY=AAAA-MM-DD`.
+- Código en `astro/src/lib/problemas/`: `cargador.ts` (cargador de la colección `problemas`: descarga y descarta las filas inválidas con aviso), `validar.ts` (chess.js: FEN, solución, mate), `calendario.ts` (problema del día, fondo común determinista por fecha, archivo), `notacion.ts`, `temas.ts` (lista controlada; el importador de Lichess la importa).
+- Problema del día: el de fecha de hoy (Madrid) o uno no usado del fondo común; las elecciones se guardan en `historial-problemas.json` solo con `GUARDAR_HISTORIAL=1` (lo pone el workflow). Fechas futuras: no se publican.
+- Páginas: `/aprende/problemas/` (problema del día y modo entrenamiento con `?nivel=` y `?tema=`; `?p=<id>` abre uno), `/aprende/problemas/archivo/`, `/aprende/problemas/problemas.json` (lo descarga el entrenador). Problema del día también en portada.
+- Tablero interactivo en cliente: chess.js (reglas) + chessground (tablero). Pista, ver solución, aciertos y rachas en localStorage, sin registro.
+- Distintivos: `propio` lleva "De las clases de Dama Gaztea"; `lichess`, mención de la fuente con enlace al problema.
+- Importación de Lichess: `scripts/importar-lichess.mjs` (300 por nivel: fácil < 1200, medio 1200 a 1700, difícil > 1700) o el workflow manual "Importar problemas de Lichess", que deja el CSV como artifact. El 31-10-2026 este equipo no conseguía conectar con lichess.org ni con docs.google.com; si vuelve a pasar, usar el workflow.
+- Cuando entre Sanity, la hoja se migra a un tipo de documento `problema` equivalente y el cargador se sustituye por una consulta.
 - Fuera de alcance: cuenta de alumno (fase 3); jugar online contra personas (descartado, se enlaza el equipo del club en Lichess).
 
 ## Maqueta de fase 0 (`/astro`)
@@ -46,14 +51,14 @@ Este proyecto no tiene ninguna relación con los proyectos de RIF (web de RIF, r
 - Ajustes globales en `astro/src/data/ajustes.json` (futuro documento único `ajustes`).
 - Selector de tres tipografías en la franja amarilla de la maqueta (`data-tipo` en `<html>`, también `?tipo=2`). Se retira al elegir una.
 - Fotos: el componente `Foto` muestra un hueco con el texto alternativo mientras no hay foto real.
-- Comandos (desde `astro/`): `npm run dev`, `npm run build`, `node scripts/verificar-problemas.mjs` (comprueba que cada solución es legal), `node scripts/muestra-lichess.mjs` (descarga problemas de muestra de la API de Lichess).
+- Comandos (desde `astro/`): `npm run dev`, `npm run build` (valida la hoja de problemas y muestra los avisos). Desde `scripts/`: `npm install` y `node importar-lichess.mjs`.
 - Sanity no se instala hasta que el club apruebe el stack.
 
 ## Estructura del repositorio
 
 - `/astro` web
 - `/studio` Sanity Studio (esquemas de la sección 6 de la especificación)
-- `/scripts` migración de Blogger (genera `_redirects`) y lector de Sheets
+- `/scripts` importación de problemas de Lichess y, más adelante, migración de Blogger (genera `_redirects`). Paquete npm propio.
 - `/docs` especificación y guía del administrador
 
 ## Reglas

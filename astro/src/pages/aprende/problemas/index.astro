@@ -1,0 +1,235 @@
+---
+import Base from '../../../layouts/Base.astro';
+import CabeceraFoto from '../../../components/CabeceraFoto.astro';
+import TableroProblema from '../../../components/TableroProblema.astro';
+import ajustes from '../../../data/ajustes.json';
+import { calendarioProblemas } from '../../../lib/datos';
+import { NIVELES, diaDeCalendario, fechaLarga } from '../../../lib/formato';
+import { TEMAS_PROBLEMA } from '../../../lib/problemas/temas';
+import { ruta } from '../../../lib/rutas';
+import '../../../styles/tablero.css';
+
+const { hoy, delDia, publicados, archivo } = await calendarioProblemas();
+if (!delDia) throw new Error('No hay ningún problema publicado para el problema del día.');
+
+const porNivel = (Object.keys(NIVELES) as (keyof typeof NIVELES)[]).map((nivel) => ({
+  nivel,
+  total: publicados.filter((p) => p.nivel === nivel).length,
+}));
+const porTema = TEMAS_PROBLEMA.map((tema) => ({ tema, total: publicados.filter((p) => p.tema.includes(tema)).length })).filter(
+  (t) => t.total,
+);
+const recientes = archivo.slice(1, 6);
+---
+
+<Base titulo="Problemas de ajedrez" descripcion="Un problema de ajedrez nuevo cada día y cientos más para entrenar por nivel y tema en un tablero interactivo.">
+  <CabeceraFoto
+    imagen={{ src: '/img/provisionales/piezas-madera-luz.jpg', alt: 'Piezas de ajedrez de madera con luz cálida' }}
+    antetitulo="Aprende"
+    titulo="Problemas de ajedrez"
+    migas={[{ texto: 'Inicio', href: '/' }, { texto: 'Aprende' }, { texto: 'Problemas' }]}
+    posicion="50% 60%"
+    compacta
+  >
+    <p class="cabecera-foto__sub">
+      Cada día, un problema nuevo. Mueve las piezas y encuentra la mejor jugada; después sigue entrenando por nivel y tema, pide una
+      pista si te atascas y mira cuánto dura tu racha.
+    </p>
+  </CabeceraFoto>
+
+  <div class="problemas">
+    <div class="contenedor">
+      <TableroProblema
+        delDia={delDia}
+        hoy={hoy}
+        fuente={ruta('/aprende/problemas/problemas.json')}
+        temas={porTema.map((t) => t.tema)}
+        total={publicados.length}
+      />
+    </div>
+  </div>
+
+  <section class="seccion">
+    <div class="contenedor entrena">
+      <div>
+        <h2 class="titulo-dorado">Entrena por nivel</h2>
+        <ul class="niveles">
+          {
+            porNivel.map(({ nivel, total }) => (
+              <li>
+                <a href={ruta(`/aprende/problemas/?nivel=${nivel}`)}>
+                  <span class={`nivel nivel--${nivel}`}>{NIVELES[nivel]}</span>
+                  <span>{total} problemas</span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        <h3 class="entrena__subtitulo">O elige un tema</h3>
+        <ul class="temas">
+          {
+            porTema.map(({ tema, total }) => (
+              <li>
+                <a href={ruta(`/aprende/problemas/?tema=${encodeURIComponent(tema)}`)}>
+                  {tema[0].toUpperCase() + tema.slice(1)} <span class="temas__total">{total}</span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+      <div>
+        <h2 class="titulo-dorado">Días anteriores</h2>
+        {
+          recientes.length ? (
+            <ol class="recientes">
+              {recientes.map(({ fecha, problema }) => (
+                <li>
+                  <a href={ruta(`/aprende/problemas/?p=${problema.id}`)}>
+                    <span class="recientes__fecha">{fechaLarga(diaDeCalendario(fecha))}</span>
+                    <span>{problema.titulo || problema.enunciado}</span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p class="texto-suave">Hoy empieza el archivo: cada día se añade el problema publicado.</p>
+          )
+        }
+        <a href={ruta('/aprende/problemas/archivo/')} class="enlace-flecha">Ver el archivo completo</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="seccion seccion--crema">
+    <div class="contenedor creditos">
+      <div>
+        <h2 class="titulo-dorado">¿Quieres jugar partidas online?</h2>
+        <p class="texto-suave">Únete al equipo del club en Lichess: torneos internos, partidas entre compañeros y análisis con el profesor.</p>
+        <a href={ajustes.equipoLichess} class="boton" rel="noopener">Equipo Dama Gaztea en Lichess</a>
+      </div>
+      <p class="creditos__nota">
+        Además de los problemas de nuestras clases, usamos problemas de la{' '}
+        <a href="https://database.lichess.org/#puzzles" rel="noopener">base abierta de Lichess</a>, publicada con licencia CC0.
+      </p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* Fondo de la página en crema, como pide la dirección de diseño */
+  .problemas {
+    padding-block: 48px var(--separacion);
+    background: var(--color-crema);
+  }
+  @media (min-width: 960px) {
+    .problemas {
+      padding-top: 64px;
+    }
+  }
+  .entrena,
+  .creditos {
+    display: grid;
+    gap: 48px;
+  }
+  @media (min-width: 900px) {
+    .entrena {
+      grid-template-columns: 3fr 2fr;
+      gap: 80px;
+    }
+    .creditos {
+      grid-template-columns: 2fr 1fr;
+      gap: 80px;
+      align-items: end;
+    }
+  }
+  .niveles,
+  .temas,
+  .recientes {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .niveles {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr));
+  }
+  .niveles a {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 64px;
+    padding: 12px 16px;
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-foto);
+    background: var(--color-white);
+    color: var(--color-text);
+    font-weight: 500;
+    text-decoration: none;
+    transition: box-shadow var(--transicion);
+  }
+  .niveles a:hover {
+    box-shadow: var(--sombra-alta);
+  }
+  .entrena__subtitulo {
+    margin: 40px 0 16px;
+    font-size: 1.25rem;
+  }
+  .temas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .temas a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 6px 14px;
+    border: 1px solid var(--color-borde);
+    border-radius: 999px;
+    background: var(--color-white);
+    color: var(--color-text);
+    font-size: 15px;
+    text-decoration: none;
+    transition: border-color var(--transicion);
+  }
+  .temas a:hover {
+    border-color: var(--color-gold);
+  }
+  .temas__total {
+    font-size: 13px;
+    color: var(--color-text-soft);
+  }
+  .recientes {
+    margin-bottom: 24px;
+  }
+  .recientes a {
+    display: grid;
+    gap: 2px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--color-borde);
+    color: var(--color-primary);
+    font-family: var(--font-titulo);
+    font-weight: var(--titulo-peso);
+    font-size: 1.1rem;
+    text-decoration: none;
+  }
+  .recientes a:hover span:last-child {
+    text-decoration: underline;
+  }
+  .recientes__fecha {
+    font-family: var(--font-texto);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-gold-texto);
+  }
+  .creditos__nota {
+    margin: 0;
+    font-size: 14px;
+    color: var(--color-text-soft);
+  }
+</style>

@@ -1,0 +1,121 @@
+---
+// Archivo del problema del día, agrupado por meses. Cada entrada abre el problema en el entrenador.
+import Base from '../../../layouts/Base.astro';
+import CabeceraFoto from '../../../components/CabeceraFoto.astro';
+import { calendarioProblemas } from '../../../lib/datos';
+import { NIVELES, diaDeCalendario } from '../../../lib/formato';
+import { ruta } from '../../../lib/rutas';
+import '../../../styles/tablero.css';
+
+const { archivo } = await calendarioProblemas();
+
+const mes = new Intl.DateTimeFormat('es-ES', { month: 'long', year: 'numeric', timeZone: 'Europe/Madrid' });
+const dia = new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', timeZone: 'Europe/Madrid' });
+const meses = new Map<string, typeof archivo>();
+for (const entrada of archivo) {
+  const clave = mes.format(diaDeCalendario(entrada.fecha));
+  meses.set(clave, [...(meses.get(clave) ?? []), entrada]);
+}
+---
+
+<Base titulo="Archivo de problemas del día" descripcion="Todos los problemas del día publicados en Dama Gaztea, ordenados por fecha.">
+  <CabeceraFoto
+    imagen={{ src: '/img/provisionales/piezas-madera-luz.jpg', alt: 'Piezas de ajedrez de madera con luz cálida' }}
+    antetitulo="Aprende"
+    titulo="Archivo de problemas"
+    migas={[{ texto: 'Inicio', href: '/' }, { texto: 'Aprende' }, { texto: 'Problemas', href: '/aprende/problemas/' }, { texto: 'Archivo' }]}
+    posicion="50% 60%"
+    compacta
+  >
+    <p class="cabecera-foto__sub">Todos los problemas del día, del más reciente al más antiguo. Pulsa uno para resolverlo en el tablero.</p>
+  </CabeceraFoto>
+
+  <section class="seccion">
+    <div class="contenedor archivo">
+      {
+        [...meses].map(([nombre, entradas]) => (
+          <section class="archivo__mes">
+            <h2 class="titulo-dorado">{nombre[0].toUpperCase() + nombre.slice(1)}</h2>
+            <ol>
+              {entradas.map(({ fecha, problema }) => (
+                <li>
+                  <a href={ruta(`/aprende/problemas/?p=${problema.id}`)}>
+                    <time datetime={fecha}>{dia.format(diaDeCalendario(fecha))}</time>
+                    <span class="archivo__titulo">{problema.titulo || problema.enunciado}</span>
+                    <span class="archivo__detalle">
+                      {problema.tema.join(', ')}
+                      {problema.origen === 'propio' ? (
+                        <span class="archivo__propio">De las clases de Dama Gaztea</span>
+                      ) : (
+                        <span>Lichess</span>
+                      )}
+                    </span>
+                    <span class={`nivel nivel--${problema.nivel}`}>{NIVELES[problema.nivel]}</span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </section>
+        ))
+      }
+      <a href={ruta('/aprende/problemas/')} class="enlace-flecha">Volver al problema de hoy</a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .archivo {
+    max-width: 880px;
+  }
+  .archivo__mes {
+    margin-bottom: 56px;
+  }
+  .archivo ol {
+    margin: 24px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .archivo li a {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas: 'fecha nivel' 'titulo nivel' 'detalle nivel';
+    column-gap: 16px;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--color-borde);
+    color: inherit;
+    text-decoration: none;
+  }
+  .archivo li a:hover .archivo__titulo {
+    text-decoration: underline;
+  }
+  .archivo time {
+    grid-area: fecha;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-gold-texto);
+  }
+  .archivo__titulo {
+    grid-area: titulo;
+    font-family: var(--font-titulo);
+    font-weight: var(--titulo-peso);
+    font-size: 1.2rem;
+    color: var(--color-primary);
+  }
+  .archivo__detalle {
+    grid-area: detalle;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 12px;
+    font-size: 14px;
+    color: var(--color-text-soft);
+  }
+  .archivo__propio {
+    color: var(--color-gold-texto);
+  }
+  .archivo .nivel {
+    grid-area: nivel;
+  }
+</style>

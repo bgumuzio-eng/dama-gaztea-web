@@ -1,0 +1,40 @@
+# Importación de problemas de la base abierta de Lichess (CC0). Solo se lanza a mano ("Run workflow" en la pestaña Actions).
+# Ejecuta scripts/importar-lichess.mjs y deja el CSV como archivo descargable del trabajo ("Artifacts"),
+# listo para importar en la pestaña "lichess" de la hoja de problemas (ver docs/guia-problemas.md).
+name: Importar problemas de Lichess
+
+on:
+  workflow_dispatch:
+    inputs:
+      por_nivel:
+        description: Problemas por nivel (fácil, medio y difícil)
+        default: '300'
+
+permissions:
+  contents: read
+
+jobs:
+  importar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v7
+
+      - name: Preparar Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Generar el CSV
+        working-directory: scripts
+        env:
+          POR_NIVEL: ${{ inputs.por_nivel }}
+        run: |
+          npm ci
+          node importar-lichess.mjs --por-nivel "$POR_NIVEL"
+
+      - name: Guardar el CSV para descargarlo
+        uses: actions/upload-artifact@v7
+        with:
+          name: problemas-lichess
+          path: scripts/salida/problemas-lichess.csv

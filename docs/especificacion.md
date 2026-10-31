@@ -70,7 +70,7 @@ En sencillo:
 | Clasificación del circuito | Google Sheets leído por la web |
 | Partidas reproducibles | Lichess embed (PGN) |
 | Problemas interactivos | chess.js (reglas) + chessground (tablero), en el navegador |
-| Base de problemas inicial | Base abierta de problemas de Lichess (CC0) |
+| Base de problemas | Google Sheets leído por la web en cada compilación, con una pestaña de problemas propios y otra importada de la base abierta de Lichess (CC0) |
 | Diagramas de posiciones | Generados desde FEN |
 | Mapas | Google Maps embed |
 | Vídeos | YouTube embed |
@@ -144,7 +144,7 @@ Menú principal (6 entradas): **Academia · Centros y horarios · Club y torneos
 5. Próximos torneos y actividades: lista con fecha, lugar y botón de inscripción. Automático desde las fichas de torneo.
 6. Centros: mapa con los puntos y enlace a cada ficha.
 7. Presentación breve de la academia y del profesor, con foto y enlace.
-8. Últimos vídeos (YouTube) y problema de la semana.
+8. Últimos vídeos (YouTube) y problema del día.
 9. Galería: últimas 8 fotos.
 10. Formulario corto de información y datos de contacto.
 11. Pie: frase de cierre, redes, legal, enlace al panel.
@@ -181,7 +181,7 @@ Menú principal (6 entradas): **Academia · Centros y horarios · Club y torneos
 - Biblioteca de vídeos por tema: aperturas, táctica y combinaciones, problemas de mate, finales, estrategia, partidas históricas, análisis, trucos y curiosidades, clases, partidas de torneos.
 - Cada vídeo: título, YouTube, explicación, diagrama opcional de la posición (FEN), solución desplegable.
 - Problemas: tablero interactivo donde el visitante resuelve problemas de táctica por niveles y temas (ver sección 9).
-- Problema de la semana: un problema destacado del profesor, resuelto en el mismo tablero interactivo, con archivo de problemas anteriores.
+- Problema del día: un problema nuevo cada día a las 06:00, resuelto en el mismo tablero interactivo, con archivo por fechas (ver sección 9.4).
 - Partidas: tablero reproducible de Lichess desde PGN.
 - Jugar online contra otras personas: no se hace en la web; se enlaza al equipo del club en Lichess.
 
@@ -259,18 +259,16 @@ Un tipo de documento por pestaña del panel. Solo los campos necesarios.
 - fecha
 
 ### `problema`
-- titulo (opcional, para los propios)
+Mientras no esté Sanity, los problemas viven en una hoja de Google Sheets (sección 9.3) con columnas equivalentes: id, fen, solucion, nivel, tema, titulo, enunciado, origen, fecha_publicacion, notas. Cuando entre Sanity, la hoja se migra a este tipo de documento (un documento por fila; la pestaña de Lichess puede seguir como CSV en el repositorio para no gastar documentos del plan gratuito).
+- titulo (opcional)
 - posicionFEN (posición en la que le toca mover al visitante)
-- enunciado ("Juegan blancas y ganan")
-- solucionJugadas (lista de jugadas en SAN, alternando visitante y respuesta forzada; la primera es del visitante)
-- solucion (texto explicativo, opcional)
+- enunciado ("Juegan blancas y ganan"; si va vacío se genera según el turno)
+- solucionJugadas (lista de jugadas alternando visitante y respuesta del rival; la primera y la última son del visitante. En la hoja, en notación española separada por espacios)
 - nivel (facil / medio / dificil)
-- tema (varios, lista controlada: mate en 1, mate en 2, clavada, horquilla, ataque doble, descubierta, desviación, sacrificio, finales...)
-- origen (propio / lichess)
-- idLichess (opcional, solo si origen = lichess)
-- puntuacionLichess (opcional, para reasignar nivel si cambian los rangos)
-- destacadoSemana (fecha de la semana, opcional; solo problemas propios)
-- publicado (sí/no)
+- tema (varios, lista controlada: mate en 1, mate en 2, mate en 3, mate del pasillo, clavada, horquilla, ataque doble, enfilada, descubierta, jaque doble, desviación, atracción, pieza indefensa, sacrificio, coronación, finales)
+- origen (propio / lichess; en los de Lichess el id es el id original del problema)
+- fechaPublicacion (opcional; el día en que sale como problema del día)
+- notas (internas, no se publican)
 
 ### `pagina`
 - titulo, slug, cuerpo (texto enriquecido), imagenCabecera, mostrarEnMenu, orden, publicada
@@ -298,7 +296,7 @@ Reglas:
 
 **Crear un torneo:** Torneos › Nuevo › datos y bases › Publicar. Aparece en portada y calendario. Tras el torneo: abrir la misma ficha, añadir crónica, clasificación, fotos y PGN; cambiar estado a Celebrado.
 
-**Crear un problema:** Problemas › Nuevo › colocar la posición en el editor de tablero (o pegar FEN) › escribir la solución › nivel y tema › Publicar. Para el problema de la semana: rellenar "destacado semana".
+**Crear un problema:** abrir la hoja de problemas › pestaña "propios" › nueva fila con la FEN copiada del editor de Lichess, la solución, el nivel y el tema › opcionalmente, la fecha en que debe salir como problema del día. Sale en la web en la publicación de las 06:00 o al momento con el botón manual (sección 9.4). Guía de una página: `docs/guia-problemas.md`. Cuando entre Sanity: Problemas › Nuevo › mismos campos › Publicar.
 
 **Actualizar el circuito:** editar la hoja de Google Sheets. La web la lee automáticamente (ver sección 8).
 
@@ -331,7 +329,7 @@ Base de datos de problemas de táctica que el visitante resuelve en un tablero i
 - El visitante mueve las piezas (arrastrar o tocar origen y destino, cómodo en móvil). La web valida cada jugada contra la solución; si es correcta, responde sola con la jugada forzada del rival y espera la siguiente.
 - Jugada incorrecta: aviso y la pieza vuelve a su casilla; se puede reintentar.
 - Pista: ilumina la pieza que hay que mover.
-- Ver solución: reproduce la línea completa con el texto explicativo, si existe.
+- Ver solución: reproduce la línea completa y la muestra escrita en notación española.
 - Contador de aciertos y racha actual y mejor racha. Un problema cuenta como acierto solo si se resuelve a la primera: sin fallos, sin pista y sin ver la solución (si los fallos no contaran, se podría resolver por tanteo). Repetir un problema ya resuelto no cambia el marcador.
 - Se acepta cualquier jugada que dé mate aunque no sea la de la solución. Las coronaciones se hacen a dama automáticamente.
 - Además de arrastrar, se puede escribir la jugada en notación española (C, A, T, D, R), útil con teclado y lectores de pantalla.
@@ -343,23 +341,32 @@ Base de datos de problemas de táctica que el visitante resuelve en un tablero i
 - Tres niveles: fácil, medio, difícil.
 - Filtro opcional por tema: mate en 1, mate en 2, clavada, horquilla, ataque doble, descubierta, desviación, sacrificio, finales y otros de la lista controlada.
 
-### 9.3 Fuentes
+### 9.3 Fuentes: la hoja de problemas
 
-1. **Problemas propios del profesor:** creados en el panel con editor de tablero o pegando FEN. Llevan el distintivo "De las clases de Dama Gaztea".
-2. **Base abierta de Lichess (licencia CC0):** importación inicial por script (`/scripts`) de unos cientos de problemas por nivel, seleccionados por puntuación (orientativo: fácil hasta 1200, medio 1200 a 1800, difícil desde 1800) y por popularidad y número de partidas jugadas, para quedarse con los más fiables. El formato de Lichess da la posición antes de la jugada del rival y las jugadas en UCI: el script aplica la primera jugada, guarda la FEN resultante y convierte el resto a SAN con chess.js. Se cita la fuente en la página.
+Los problemas se gestionan en una hoja de Google Sheets con dos pestañas de columnas idénticas (id, fen, solucion, nivel, tema, titulo, enunciado, origen, fecha_publicacion, notas):
 
-### 9.4 Problema de la semana
+1. **propios:** los problemas del profesor. Llevan en la web el distintivo "De las clases de Dama Gaztea".
+2. **lichess:** problemas de la base abierta de Lichess (licencia CC0), con origen `lichess` y el id original. Llevan en la web una mención de la fuente con enlace al problema en Lichess, y la página de problemas cita la base. Se generan con `scripts/importar-lichess.mjs` (también como trabajo manual de GitHub Actions, "Importar problemas de Lichess"): descarga la base, se queda con 300 problemas por nivel (fácil por debajo de 1200, medio de 1200 a 1700, difícil por encima de 1700) entre los más populares, jugados y estables, de 4 jugadas propias como máximo, con variedad de temas; aplica la primera jugada del rival, convierte el resto a notación española y escribe un CSV para importar en la pestaña.
 
-Deja de ser una ficha estática: es un problema propio del profesor marcado como destacado de la semana, resuelto en el mismo tablero. Aparece en portada y en Aprende, con archivo de semanas anteriores.
+Cada pestaña se publica en la web como CSV (Archivo › Compartir › Publicar en la web) y sus direcciones se guardan en `hojaProblemas` de `astro/src/data/ajustes.json`. En cada compilación, Astro descarga las pestañas y valida cada fila con chess.js: FEN legal (y el bando que no mueve no está en jaque), solución legal, terminada en una jugada del bando que resuelve, y en mate cuando el enunciado o el tema dicen mate (con el número de jugadas si dice "mate en N"); además, nivel válido, id único y fecha única. Las filas con errores se descartan con un aviso en el registro de compilación que indica pestaña, fila, id y motivo; el resto se publica. Si una pestaña no se puede descargar o le faltan columnas, la compilación falla y la web sigue como estaba.
+
+### 9.4 Problema del día
+
+- La web se compila y publica cada día a las 06:00 (hora de Madrid) con una ejecución programada de GitHub Actions; además se puede publicar al momento con "Run workflow" (`workflow_dispatch`).
+- El problema del día es el que tiene `fecha_publicacion` de hoy. Si no hay ninguno, se elige uno del fondo común (problemas sin fecha) que no haya salido antes, de forma determinista a partir de la fecha. Cuando ya han salido todos, se repite el que lleva más tiempo sin salir.
+- Las elecciones del fondo común se guardan en `astro/src/data/historial-problemas.json`, que la propia ejecución de GitHub Actions confirma en el repositorio. Así el archivo no cambia aunque se añadan o quiten filas de la hoja.
+- Los problemas con fecha futura no aparecen en ningún sitio hasta su día.
+- Aparece en portada y en Aprende › Problemas. El archivo por fechas está en `/aprende/problemas/archivo/`.
+- Modo entrenamiento: el resto de problemas publicados, filtrables por nivel y tema (`/aprende/problemas/?nivel=medio&tema=clavada`).
 
 ### 9.5 Tecnología
 
 - chess.js para las reglas y la validación de jugadas.
 - chessground (el tablero de Lichess) para la interfaz, con los colores de la paleta.
 - Stockfish en el navegador (WebAssembly) solo si más adelante se añade "jugar contra la máquina".
-- Todo en cliente, sin servidor: los problemas se generan como JSON estático en build.
+- Todo en cliente, sin servidor: los problemas se generan como JSON estático en build (`/aprende/problemas/problemas.json`, que el entrenador descarga después de pintar el problema del día).
 - Licencias: chess.js es BSD-2 (sin condiciones relevantes). chessground es GPL-3.0: al servirse al navegador, el código de la web que lo incluye debe poder ofrecerse bajo GPL (lo más sencillo es que el repositorio sea público). Si no se quiere publicar el código, alternativa con licencia MIT: cm-chessboard. Decidir antes de lanzar la fase 2.
-- Los problemas de Lichess se guardan como ficheros JSON en el repositorio (no en Sanity) para no gastar documentos del plan gratuito; los propios viven en Sanity.
+- Mientras no esté Sanity, todos los problemas viven en la hoja de Google Sheets. Al entrar Sanity, los propios se migran al tipo `problema` y los de Lichess pueden quedarse como CSV en el repositorio para no gastar documentos del plan gratuito.
 
 ### 9.6 Fuera de alcance
 
@@ -489,7 +496,7 @@ Material para la fase 1:
 - Componentes clave: `Hero`, `NoticiaCard`, `CentroCard`, `TorneoCard`, `Mapa`, `TableroFEN`, `TableroProblema`, `LichessEmbed`, `Clasificacion`, `FormularioContacto`, `BotonWhatsApp`, `ShareButtons`, `Faq`.
 - Formularios: endpoint en Cloudflare Worker (validación, Turnstile, Resend, Google Sheets API).
 - Circuito: fetch del CSV publicado de Google Sheets en build; webhook de Sanity y botón manual para redeploy.
-- Problemas: chess.js + chessground en una isla de cliente; problemas como JSON estático; progreso en localStorage; script de importación de la base CC0 de Lichess en `/scripts`.
+- Problemas: hoja de Google Sheets publicada como CSV y leída en build por un cargador de Astro (`astro/src/lib/problemas/`), con validación chess.js; problema del día con ejecución programada de GitHub Actions a las 06:00 de Madrid; chess.js + chessground en una isla de cliente; progreso en localStorage; script de importación de la base CC0 de Lichess en `/scripts`. Al entrar Sanity, la hoja se migra al tipo `problema`.
 - Redirecciones: fichero `_redirects` generado por el script de migración.
 - SEO: `sitemap.xml`, `robots.txt`, Open Graph por página, datos estructurados `LocalBusiness` en centros y `Event` en torneos, `hreflang` preparado para `/eu/`.
 - Accesibilidad: contraste AA, navegación por teclado, textos alternativos obligatorios.

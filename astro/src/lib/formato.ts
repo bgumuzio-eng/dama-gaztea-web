@@ -18,6 +18,9 @@ export const diaSemana = (d: Date) =>
 
 export const isoDia = (d: Date) => d.toISOString().slice(0, 10);
 
+// Fechas de calendario sin hora ("2026-10-31", como en la hoja de problemas): a mediodía UTC para que en Madrid sea el mismo día.
+export const diaDeCalendario = (iso: string) => new Date(`${iso}T12:00:00Z`);
+
 export const enlaceWhatsApp = (mensaje: string = ajustes.whatsapp.mensaje) =>
   `https://wa.me/${ajustes.whatsapp.numero}?text=${encodeURIComponent(mensaje)}`;
 

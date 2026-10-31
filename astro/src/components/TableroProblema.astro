@@ -1,36 +1,23 @@
 ---
 // Entrenador de problemas: el visitante mueve y se valida cada jugada contra solucionJugadas.
 // Toda la lógica está en src/scripts/problemas.ts y funciona sin servidor.
-import type { CollectionEntry } from 'astro:content';
+// La página lleva dentro solo el problema del día; el resto (cientos) se descarga después desde `fuente`.
 import { NIVELES } from '../lib/formato';
-import { TEMAS_PROBLEMA } from '../content.config';
+import type { Problema } from '../lib/problemas/validar';
 import '../styles/tablero.css';
 
 interface Props {
-  problemas: CollectionEntry<'problemas'>[];
-  inicial?: string;
+  delDia: Problema;
+  hoy: string;
+  fuente: string;
+  temas: string[];
+  total: number;
 }
-const { problemas, inicial } = Astro.props;
-
-const datos = problemas.map((p) => ({
-  id: p.id,
-  titulo: p.data.titulo,
-  posicionFEN: p.data.posicionFEN,
-  enunciado: p.data.enunciado,
-  solucionJugadas: p.data.solucionJugadas,
-  solucion: p.data.solucion,
-  nivel: p.data.nivel,
-  tema: p.data.tema,
-  origen: p.data.origen,
-  idLichess: p.data.idLichess,
-  puntuacionLichess: p.data.puntuacionLichess,
-}));
-const temasUsados = TEMAS_PROBLEMA.filter((t) => problemas.some((p) => p.data.tema.includes(t)));
-const nombre = (p: (typeof datos)[number]) => p.titulo || `Problema de Lichess ${p.idLichess}`;
+const { delDia, hoy, fuente, temas, total } = Astro.props;
 ---
 
-<section class="entrenador" data-problemas data-inicial={inicial}>
-  <script type="application/json" set:html={JSON.stringify(datos)} />
+<section class="entrenador" data-problemas data-fuente={fuente} data-hoy={hoy}>
+  <script type="application/json" set:html={JSON.stringify(delDia)} />
 
   <div class="entrenador__tablero">
     <div class="tablero" data-tablero></div>
@@ -56,12 +43,13 @@ const nombre = (p: (typeof datos)[number]) => p.titulo || `Problema de Lichess $
         <span class="rotulo">Tema</span>
         <select name="tema">
           <option value="todos">Todos los temas</option>
-          {temasUsados.map((t) => <option value={t}>{t[0].toUpperCase() + t.slice(1)}</option>)}
+          {temas.map((t) => <option value={t}>{t[0].toUpperCase() + t.slice(1)}</option>)}
         </select>
       </label>
     </div>
 
     <div class="entrenador__cabeza">
+      <p class="rotulo entrenador__modo" data-modo></p>
       <p class="entrenador__distintivo" data-distintivo></p>
       <h2 class="entrenador__enunciado" data-enunciado>Cargando problema...</h2>
       <p class="entrenador__meta" data-meta></p>
@@ -85,41 +73,18 @@ const nombre = (p: (typeof datos)[number]) => p.titulo || `Problema de Lichess $
       <div class="solucion" data-solucion hidden>
         <p class="rotulo">Solución</p>
         <p class="solucion__jugadas" data-solucion-jugadas></p>
-        <p data-solucion-texto></p>
       </div>
       <dl class="marcador">
         <div class="marcador__racha"><dt>Racha</dt><dd data-marcador="racha">0</dd></div>
         <div><dt>Mejor racha</dt><dd data-marcador="mejorRacha">0</dd></div>
         <div><dt>Aciertos</dt><dd data-marcador="aciertos">0</dd></div>
-        <div><dt>Resueltos</dt><dd data-marcador="resueltos">0/{datos.length}</dd></div>
+        <div><dt>Resueltos</dt><dd data-marcador="resueltos">0/{total}</dd></div>
       </dl>
       <p class="entrenador__nota">
         Cuenta como acierto si lo resuelves a la primera, sin fallos, pistas ni solución. Tu progreso se guarda solo en este
         navegador. <button type="button" class="enlace-boton" data-accion="borrar">Empezar de cero</button>
       </p>
     </div>
-  </div>
-
-  <div class="entrenador__lista">
-    <h2 class="titulo-dorado">Todos los problemas</h2>
-    <ol class="lista-problemas">
-      {
-        datos.map((p) => (
-          <li data-item={p.id} data-nivel={p.nivel} data-tema={p.tema.join('|')}>
-            <button type="button" data-cargar={p.id}>
-              <span class={`nivel nivel--${p.nivel}`}>{NIVELES[p.nivel]}</span>
-              <span class="lista-problemas__nombre">{nombre(p)}</span>
-              <span class="lista-problemas__temas">
-                {p.tema.join(', ')}
-                {p.origen === 'propio' && <span class="lista-problemas__propio"> · De las clases de Dama Gaztea</span>}
-              </span>
-              <span class="lista-problemas__estado" data-estado aria-label="" />
-            </button>
-          </li>
-        ))
-      }
-    </ol>
-    <p class="texto-suave" data-sin-resultados hidden>No hay problemas con ese nivel y tema.</p>
   </div>
 </section>
 
@@ -132,7 +97,7 @@ const nombre = (p: (typeof datos)[number]) => p.titulo || `Problema de Lichess $
     display: grid;
     gap: 24px;
     grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: 'cabeza' 'tablero' 'acciones' 'filtros' 'lista';
+    grid-template-areas: 'cabeza' 'tablero' 'acciones' 'filtros';
   }
   .entrenador__panel {
     display: contents;
@@ -150,15 +115,11 @@ const nombre = (p: (typeof datos)[number]) => p.titulo || `Problema de Lichess $
   .entrenador__filtros {
     grid-area: filtros;
   }
-  .entrenador__lista {
-    grid-area: lista;
-    margin-top: 40px;
-  }
   @media (min-width: 960px) {
     .entrenador {
       column-gap: 56px;
       grid-template-columns: minmax(0, 600px) minmax(0, 1fr);
-      grid-template-areas: 'tablero panel' 'lista lista';
+      grid-template-areas: 'tablero panel';
       align-items: start;
     }
     .entrenador__panel {
@@ -178,6 +139,10 @@ const nombre = (p: (typeof datos)[number]) => p.titulo || `Problema de Lichess $
     }
   }
 
+  .entrenador__modo {
+    min-height: 1.4em;
+    margin: 0 0 6px;
+  }
   .entrenador__distintivo {
     min-height: 1.6em;
     margin: 0 0 8px;
@@ -379,84 +344,4 @@ const nombre = (p: (typeof datos)[number]) => p.titulo || `Problema de Lichess $
     font-size: 15px;
   }
 
-  .lista-problemas {
-    display: grid;
-    gap: 12px;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
-    margin: 24px 0 0;
-    padding: 0;
-    list-style: none;
-  }
-  .lista-problemas li[hidden] {
-    display: none;
-  }
-  .lista-problemas button {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    grid-template-areas: 'nivel nombre estado' 'nivel temas estado';
-    column-gap: 14px;
-    align-items: center;
-    width: 100%;
-    padding: 16px;
-    border: 1px solid var(--color-borde);
-    border-radius: var(--radio-foto);
-    background: var(--color-white);
-    text-align: left;
-    font: inherit;
-    color: inherit;
-    cursor: pointer;
-    transition: box-shadow var(--transicion), border-color var(--transicion);
-  }
-  .lista-problemas button:hover {
-    box-shadow: var(--sombra-alta);
-  }
-  .lista-problemas li.actual button {
-    border-color: var(--color-gold);
-  }
-  .lista-problemas .nivel {
-    grid-area: nivel;
-  }
-  .lista-problemas__nombre {
-    grid-area: nombre;
-    font-family: var(--font-titulo);
-    font-weight: var(--titulo-peso);
-    font-size: 1.1rem;
-    color: var(--color-primary);
-  }
-  .lista-problemas__temas {
-    grid-area: temas;
-    font-size: 14px;
-    color: var(--color-text-soft);
-  }
-  .lista-problemas__propio {
-    color: var(--color-gold-texto);
-  }
-  .lista-problemas__estado {
-    grid-area: estado;
-    font-size: 1.3rem;
-    color: var(--color-gold);
-  }
-  .nivel {
-    display: grid;
-    place-items: center;
-    width: 64px;
-    padding: 6px 0;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-  .nivel--facil {
-    background: var(--color-crema);
-    color: var(--color-primary);
-  }
-  .nivel--medio {
-    background: var(--color-accent);
-    color: var(--color-white);
-  }
-  .nivel--dificil {
-    background: var(--color-primary);
-    color: var(--color-gold);
-  }
 </style>

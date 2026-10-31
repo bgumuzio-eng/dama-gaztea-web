@@ -1,25 +1,57 @@
 # Publicación TEMPORAL de la maqueta en GitHub Pages: https://bgumuzio-eng.github.io/dama-gaztea-web/
-# Cada push a main compila la web (carpeta astro) y la publica sola.
+# Se compila y se publica:
+# - en cada push a main;
+# - cada día a las 06:00 de Madrid, para que salga el problema del día (lee la hoja de problemas en cada compilación);
+# - a mano, con "Run workflow" en la pestaña Actions de GitHub, para publicar al momento un cambio de la hoja.
 # La web definitiva irá en una cuenta y dominio del club, no aquí.
 name: Publicar maqueta en GitHub Pages
 
 on:
   push:
     branches: [main]
+  schedule:
+    # GitHub solo admite horas UTC. Las 06:00 de Madrid son las 04:00 UTC en horario de verano y las 05:00 UTC en invierno:
+    # se programan las dos y el trabajo "hora" deja seguir solo la que corresponde ese día.
+    - cron: '0 4 * * *'
+    - cron: '0 5 * * *'
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
   cancel-in-progress: false
 
 jobs:
-  build:
+  hora:
     runs-on: ubuntu-latest
+    outputs:
+      publicar: ${{ steps.comprobar.outputs.publicar }}
+    steps:
+      - name: Comprobar que son las 06:00 en Madrid
+        id: comprobar
+        env:
+          PROGRAMACION: ${{ github.event.schedule }}
+        run: |
+          desfase=$(TZ=Europe/Madrid date +%z)
+          if [ -z "$PROGRAMACION" ]; then publicar=true
+          elif [ "$PROGRAMACION" = '0 4 * * *' ] && [ "$desfase" = '+0200' ]; then publicar=true
+          elif [ "$PROGRAMACION" = '0 5 * * *' ] && [ "$desfase" = '+0100' ]; then publicar=true
+          else publicar=false
+          fi
+          echo "Programación: ${PROGRAMACION:-ninguna}; desfase de Madrid: $desfase; publicar: $publicar"
+          echo "publicar=$publicar" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: hora
+    if: needs.hora.outputs.publicar == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      # La compilación apunta el problema del día en astro/src/data/historial-problemas.json (ver lib/problemas/calendario.ts).
+      GUARDAR_HISTORIAL: '1'
     steps:
       - name: Descargar el repositorio
         uses: actions/checkout@v7
@@ -34,9 +66,22 @@ jobs:
         with:
           path: ./astro
 
+      - name: Guardar el historial del problema del día
+        run: |
+          git add astro/src/data/historial-problemas.json
+          if git diff --cached --quiet; then echo "Sin cambios en el historial"; exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "Problema del día: actualizar historial"
+          git pull --rebase origin main
+          git push origin HEAD:main
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

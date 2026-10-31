@@ -73,3 +73,28 @@
 .tablero.orientation-black coords.files coord:nth-child(even) {
   color: var(--casilla-clara);
 }
+
+/* Distintivo de nivel de los problemas (entrenador, archivo y portada) */
+.nivel {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  padding: 6px 0;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.nivel--facil {
+  background: var(--color-crema);
+  color: var(--color-primary);
+}
+.nivel--medio {
+  background: var(--color-accent);
+  color: var(--color-white);
+}
+.nivel--dificil {
+  background: var(--color-primary);
+  color: var(--color-gold);
+}

@@ -1,0 +1,7 @@
+id,fen,solucion,nivel,tema,titulo,enunciado,origen,fecha_publicacion,notas
+dg-001,r3k3/8/8/1N6/8/8/8/4K3 w - - 0 1,Cc7+ Rd7 Cxa8,facil,horquilla,El caballo que salta a c7,Juegan blancas y ganan material,propio,,Desde c7 el caballo da jaque y ataca a la torre a la vez.
+dg-002,6k1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1,Td8#,facil,"mate en 1, mate del pasillo",El pasillo cerrado,Juegan blancas y dan mate en 1,propio,,Los peones negros encierran a su rey en la octava fila.
+4VKgv,r3kb1r/1p3ppp/p1n1p3/1Q1p1b2/3PnB2/q3PN2/P2NBPPP/1R3RK1 w kq - 0 13,Dxb7 Cd8 Dxa8,facil,horquilla,,Juegan blancas y ganan,lichess,,Lichess 967
+KArya,6k1/pp1P3p/1b2N3/6p1/8/8/PP2p1PP/5R1K b - - 0 27,exf1=D#,facil,"mate en 1, finales",,Juegan negras y dan mate en 1,lichess,,Lichess 754
+olEnO,2kN1r2/ppp3p1/3p4/4p2Q/2P4p/PqNKP2P/6P1/6R1 b - - 2 27,e4+ Rd4 c5+ Rd5 Dxc3,medio,"desviación, clavada",,Juegan negras y ganan,lichess,,Lichess 1558
+aq2uL,3r3k/p7/1p4p1/4P1Pp/4qQ2/2p1BR2/P2NK3/7R b - - 0 37,Txd2+ Rf1 Db1#,dificil,"mate en 2, clavada",,Juegan negras y dan mate en 2,lichess,,Lichess 1847

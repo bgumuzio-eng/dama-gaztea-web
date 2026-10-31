@@ -1,23 +1,15 @@
 // Lógica del entrenador de problemas (sección 9 de docs/especificacion.md).
 // chess.js valida las reglas; chessground pinta el tablero. El progreso vive en localStorage.
+// La página trae el problema del día; el resto se descarga de problemas.json para no cargar cientos de problemas en el HTML.
+// Parámetros de la dirección: ?p=<id> abre un problema concreto; ?nivel=medio&tema=clavada abre el modo entrenamiento.
 import { Chess, type Move } from 'chess.js';
 import { Chessground } from 'chessground';
 import type { Key } from 'chessground/types';
+import { aEspanol, deEspanol } from '../lib/problemas/notacion';
+import type { Problema } from '../lib/problemas/validar';
 
-type Nivel = 'facil' | 'medio' | 'dificil';
-type Problema = {
-  id: string;
-  titulo: string;
-  posicionFEN: string;
-  enunciado: string;
-  solucionJugadas: string[];
-  solucion: string;
-  nivel: Nivel;
-  tema: string[];
-  origen: 'propio' | 'lichess';
-  idLichess?: string;
-  puntuacionLichess?: number;
-};
+type Nivel = Problema['nivel'];
+
 type Resultado = 'acierto' | 'resuelto' | 'visto';
 type Progreso = { resueltos: Record<string, Resultado>; aciertos: number; racha: number; mejorRacha: number };
 
@@ -39,30 +31,36 @@ function guardarProgreso(p: Progreso) {
   } catch {}
 }
 
-// Notación española (C, A, T, D, R) <-> inglesa de chess.js (N, B, R, Q, K)
-const A_INGLES: Record<string, string> = { C: 'N', A: 'B', T: 'R', D: 'Q', R: 'K' };
-const A_ESPANOL: Record<string, string> = { N: 'C', B: 'A', R: 'T', Q: 'D', K: 'R' };
-const deEspanol = (san: string) => san.trim().replace(/0/g, 'O').replace(/[CATDR]/g, (l) => A_INGLES[l]);
-const aEspanol = (san: string) => san.replace(/[NBRQK]/g, (l) => A_ESPANOL[l]);
-
 const raiz = document.querySelector<HTMLElement>('[data-problemas]');
 if (raiz) iniciar(raiz);
 
 function iniciar(raiz: HTMLElement) {
-  const problemas: Problema[] = JSON.parse(raiz.querySelector('script[type="application/json"]')!.textContent!);
+  const delDia: Problema = JSON.parse(raiz.querySelector('script[type="application/json"]')!.textContent!);
   const $ = <T extends HTMLElement = HTMLElement>(sel: string) => raiz.querySelector<T>(sel)!;
 
+  // Todos los problemas publicados. Mientras llegan, el tablero ya enseña el problema del día.
+  let problemas: Problema[] = [delDia];
+  const listos = fetch(raiz.dataset.fuente!)
+    .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+    .then((lista: Problema[]) => {
+      problemas = lista;
+      pintarProgreso();
+    })
+    .catch(() => mensaje('No se han podido cargar más problemas. Revisa la conexión y recarga la página.', 'error'));
+  const fechaDelDia = new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(
+    new Date(`${raiz.dataset.hoy}T12:00:00Z`),
+  );
+
   const ui = {
+    modo: $('[data-modo]'),
     distintivo: $('[data-distintivo]'),
     enunciado: $('[data-enunciado]'),
     meta: $('[data-meta]'),
     mensaje: $('[data-mensaje]'),
     solucion: $('[data-solucion]'),
     solucionJugadas: $('[data-solucion-jugadas]'),
-    solucionTexto: $('[data-solucion-texto]'),
     formJugada: $<HTMLFormElement>('[data-form-jugada]'),
     tema: $<HTMLSelectElement>('select[name="tema"]'),
-    sinResultados: $('[data-sin-resultados]'),
   };
 
   let progreso = leerProgreso();
@@ -126,15 +124,13 @@ function iniciar(raiz: HTMLElement) {
     sincronizar();
     cg.set({ animation: { enabled: true } });
 
+    ui.modo.textContent = p.id === delDia.id ? `Problema del día · ${fechaDelDia}` : 'Entrenamiento';
     ui.distintivo.innerHTML =
       p.origen === 'propio'
         ? '<span class="etiqueta etiqueta--oro">De las clases de Dama Gaztea</span>'
-        : `<span class="etiqueta">Base abierta de Lichess (CC0)</span>`;
+        : `<a class="etiqueta" href="https://lichess.org/training/${p.id}" rel="noopener">Problema de la base abierta de Lichess (CC0)</a>`;
     ui.enunciado.textContent = p.enunciado;
-    const detalles = [NIVELES[p.nivel], p.tema.join(', ')];
-    if (p.titulo) detalles.unshift(p.titulo);
-    if (p.puntuacionLichess) detalles.push(`puntuación ${p.puntuacionLichess}`);
-    ui.meta.textContent = detalles.filter(Boolean).join(' · ');
+    ui.meta.textContent = [p.titulo, NIVELES[p.nivel], p.tema.join(', ')].filter(Boolean).join(' · ');
     ui.solucion.hidden = true;
 
     const previo = progreso.resueltos[p.id];
@@ -144,7 +140,6 @@ function iniciar(raiz: HTMLElement) {
         : `Te toca: juegan ${colorTurno() === 'white' ? 'blancas' : 'negras'}. Mueve una pieza.`,
     );
 
-    raiz.querySelectorAll('[data-item]').forEach((li) => li.classList.toggle('actual', (li as HTMLElement).dataset.item === p.id));
     const url = new URL(location.href);
     url.searchParams.set('p', p.id);
     history.replaceState(null, '', url);
@@ -245,7 +240,6 @@ function iniciar(raiz: HTMLElement) {
       else partes.push(partes.length === 0 ? `${numero}... ${aEspanol(m.san)}` : aEspanol(m.san));
     }
     ui.solucionJugadas.textContent = partes.join(' ');
-    ui.solucionTexto.textContent = actual.solucion;
     ui.solucion.hidden = false;
   }
 
@@ -282,19 +276,27 @@ function iniciar(raiz: HTMLElement) {
     return problemas.filter((p) => (nivel === 'todos' || p.nivel === nivel) && (tema === 'todos' || p.tema.includes(tema)));
   }
 
-  function siguienteProblema() {
+  // Con desdeElPrincipio se elige el primero sin resolver del filtro, aunque sea el que está en el tablero.
+  async function siguienteProblema(desdeElPrincipio = false) {
+    await listos;
     const lista = filtrados();
-    if (!lista.length) return;
-    const desde = Math.max(0, lista.findIndex((p) => p.id === actual.id));
+    if (!lista.length) return mensaje('No hay problemas con ese nivel y tema. Prueba con otro filtro.', 'info');
+    const desde = desdeElPrincipio ? -1 : lista.findIndex((p) => p.id === actual.id);
     const ordenados = [...lista.slice(desde + 1), ...lista.slice(0, desde + 1)];
-    cargar(ordenados.find((p) => !progreso.resueltos[p.id] && p.id !== actual.id) ?? ordenados[0]);
+    cargar(ordenados.find((p) => !progreso.resueltos[p.id] && (desdeElPrincipio || p.id !== actual.id)) ?? ordenados[0]);
   }
 
-  function aplicarFiltros() {
-    const visibles = new Set(filtrados().map((p) => p.id));
-    raiz.querySelectorAll<HTMLElement>('[data-item]').forEach((li) => (li.hidden = !visibles.has(li.dataset.item!)));
-    ui.sinResultados.hidden = visibles.size > 0;
-    if (visibles.size && !visibles.has(actual.id)) siguienteProblema();
+  // Cambiar el filtro pasa al modo entrenamiento y queda en la dirección para poder compartirla.
+  async function aplicarFiltros() {
+    const url = new URL(location.href);
+    const nivel = raiz.querySelector<HTMLInputElement>('input[name="nivel"]:checked')!.value;
+    for (const [clave, valor] of [['nivel', nivel], ['tema', ui.tema.value]]) {
+      if (valor === 'todos') url.searchParams.delete(clave);
+      else url.searchParams.set(clave, valor);
+    }
+    history.replaceState(null, '', url);
+    await listos;
+    if (!filtrados().some((p) => p.id === actual.id)) siguienteProblema();
   }
 
   function pintarProgreso() {
@@ -302,23 +304,14 @@ function iniciar(raiz: HTMLElement) {
     marcador('aciertos', progreso.aciertos);
     marcador('racha', progreso.racha);
     marcador('mejorRacha', progreso.mejorRacha);
-    marcador('resueltos', `${problemas.filter((p) => progreso.resueltos[p.id]).length}/${problemas.length}`);
-    raiz.querySelectorAll<HTMLElement>('[data-item]').forEach((li) => {
-      const r = progreso.resueltos[li.dataset.item!];
-      const estado = li.querySelector<HTMLElement>('[data-estado]')!;
-      estado.textContent = r === 'acierto' ? '★' : r ? '✓' : '';
-      estado.setAttribute('aria-label', r === 'acierto' ? 'Acierto' : r ? 'Resuelto con ayuda' : 'Sin resolver');
-    });
+    if (problemas.length > 1) {
+      marcador('resueltos', `${problemas.filter((p) => progreso.resueltos[p.id]).length}/${problemas.length}`);
+    }
   }
 
   raiz.addEventListener('click', (e) => {
-    const objetivo = (e.target as HTMLElement).closest<HTMLElement>('[data-accion], [data-cargar]');
+    const objetivo = (e.target as HTMLElement).closest<HTMLElement>('[data-accion]');
     if (!objetivo) return;
-    if (objetivo.dataset.cargar) {
-      cargar(problemas.find((p) => p.id === objetivo.dataset.cargar)!);
-      $('[data-tablero]').scrollIntoView({ behavior: 'smooth', block: 'center' });
-      return;
-    }
     switch (objetivo.dataset.accion) {
       case 'pista':
         return pista();
@@ -347,7 +340,21 @@ function iniciar(raiz: HTMLElement) {
   raiz.querySelectorAll('input[name="nivel"]').forEach((r) => r.addEventListener('change', aplicarFiltros));
   ui.tema.addEventListener('change', aplicarFiltros);
 
-  const pedido = new URLSearchParams(location.search).get('p') ?? raiz.dataset.inicial;
-  cargar(problemas.find((p) => p.id === pedido) ?? problemas[0]);
+  // Arranque: el problema pedido en la dirección, el modo entrenamiento si hay filtros o, si no, el problema del día.
+  const params = new URLSearchParams(location.search);
+  const nivelPedido = raiz.querySelector<HTMLInputElement>(`input[name="nivel"][value="${CSS.escape(params.get('nivel') ?? '')}"]`);
+  if (nivelPedido) nivelPedido.checked = true;
+  if ([...ui.tema.options].some((o) => o.value === params.get('tema'))) ui.tema.value = params.get('tema')!;
+  const pedido = params.get('p');
+  cargar(delDia);
   pintarProgreso();
+  if (pedido && pedido !== delDia.id) {
+    listos.then(() => {
+      const p = problemas.find((p) => p.id === pedido);
+      if (p) cargar(p);
+      else mensaje('Ese problema ya no está publicado. Te enseñamos el problema del día.', 'info');
+    });
+  } else if (!pedido && (nivelPedido || ui.tema.value !== 'todos')) {
+    siguienteProblema(true);
+  }
 }
