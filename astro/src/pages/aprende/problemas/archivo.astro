@@ -44,11 +44,7 @@ for (const entrada of archivo) {
                     <span class="archivo__titulo">{problema.titulo || problema.enunciado}</span>
                     <span class="archivo__detalle">
                       {problema.tema.join(', ')}
-                      {problema.origen === 'propio' ? (
-                        <span class="archivo__propio">De las clases de Dama Gaztea</span>
-                      ) : (
-                        <span>Lichess</span>
-                      )}
+                      {problema.origen === 'propio' && <span class="archivo__propio">De las clases de Dama Gaztea</span>}
                     </span>
                     <span class={`nivel nivel--${problema.nivel}`}>{NIVELES[problema.nivel]}</span>
                   </a>

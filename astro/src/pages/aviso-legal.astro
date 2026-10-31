@@ -1,0 +1,24 @@
+---
+// Aviso legal. El texto completo lo facilita el club (sección 5.8 de docs/especificacion.md); de momento solo lleva
+// la procedencia de los problemas de entrenamiento.
+import Base from '../layouts/Base.astro';
+import ajustes from '../data/ajustes.json';
+---
+
+<Base titulo="Aviso legal" descripcion={`Aviso legal de ${ajustes.nombreAcademia}.`}>
+  <section class="seccion">
+    <div class="contenedor prosa aviso">
+      <h1>Aviso legal</h1>
+      <p class="texto-suave">El texto del aviso legal está pendiente de que lo facilite el club.</p>
+
+      <h2>Contenidos de terceros</h2>
+      <p>Parte de los problemas de entrenamiento procede de bases de datos de dominio público (licencia CC0).</p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .aviso {
+    max-width: 760px;
+  }
+</style>

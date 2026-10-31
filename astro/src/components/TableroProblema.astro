@@ -3,7 +3,7 @@
 // Toda la lógica está en src/scripts/problemas.ts y funciona sin servidor.
 // La página lleva dentro solo el problema del día; el resto (cientos) se descarga después desde `fuente`.
 import { NIVELES } from '../lib/formato';
-import type { Problema } from '../lib/problemas/validar';
+import { paraLaWeb, type Problema } from '../lib/problemas/validar';
 import '../styles/tablero.css';
 
 interface Props {
@@ -17,7 +17,7 @@ const { delDia, hoy, fuente, temas, total } = Astro.props;
 ---
 
 <section class="entrenador" data-problemas data-fuente={fuente} data-hoy={hoy}>
-  <script type="application/json" set:html={JSON.stringify(delDia)} />
+  <script type="application/json" set:html={JSON.stringify(paraLaWeb(delDia))} />
 
   <div class="entrenador__tablero">
     <div class="tablero" data-tablero></div>

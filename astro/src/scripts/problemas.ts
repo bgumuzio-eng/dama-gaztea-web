@@ -6,7 +6,7 @@ import { Chess, type Move } from 'chess.js';
 import { Chessground } from 'chessground';
 import type { Key } from 'chessground/types';
 import { aEspanol, deEspanol } from '../lib/problemas/notacion';
-import type { Problema } from '../lib/problemas/validar';
+import type { ProblemaWeb as Problema } from '../lib/problemas/validar';
 
 type Nivel = Problema['nivel'];
 
@@ -125,10 +125,7 @@ function iniciar(raiz: HTMLElement) {
     cg.set({ animation: { enabled: true } });
 
     ui.modo.textContent = p.id === delDia.id ? `Problema del día · ${fechaDelDia}` : 'Entrenamiento';
-    ui.distintivo.innerHTML =
-      p.origen === 'propio'
-        ? '<span class="etiqueta etiqueta--oro">De las clases de Dama Gaztea</span>'
-        : `<a class="etiqueta" href="https://lichess.org/training/${p.id}" rel="noopener">Problema de la base abierta de Lichess (CC0)</a>`;
+    ui.distintivo.innerHTML = p.propio ? '<span class="etiqueta etiqueta--oro">De las clases de Dama Gaztea</span>' : '';
     ui.enunciado.textContent = p.enunciado;
     ui.meta.textContent = [p.titulo, NIVELES[p.nivel], p.tema.join(', ')].filter(Boolean).join(' · ');
     ui.solucion.hidden = true;

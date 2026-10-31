@@ -145,3 +145,9 @@ export function validarFila({ celdas }: Fila): Validacion {
     avisos,
   };
 }
+
+// Lo que llega al navegador: sin fecha ni origen. Solo los problemas de Álex llevan marca (distintivo propio);
+// los importados se ven igual que el resto, sin mención de la fuente.
+export type ProblemaWeb = Omit<Problema, 'origen' | 'fechaPublicacion'> & { propio: boolean };
+
+export const paraLaWeb = ({ origen, fechaPublicacion, ...p }: Problema): ProblemaWeb => ({ ...p, propio: origen === 'propio' });

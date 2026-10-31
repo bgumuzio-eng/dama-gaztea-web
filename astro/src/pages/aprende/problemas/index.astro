@@ -105,13 +105,9 @@ const recientes = archivo.slice(1, 6);
     <div class="contenedor creditos">
       <div>
         <h2 class="titulo-dorado">¿Quieres jugar partidas online?</h2>
-        <p class="texto-suave">Únete al equipo del club en Lichess: torneos internos, partidas entre compañeros y análisis con el profesor.</p>
-        <a href={ajustes.equipoLichess} class="boton" rel="noopener">Equipo Dama Gaztea en Lichess</a>
+        <p class="texto-suave">Únete al equipo online del club: torneos internos, partidas entre compañeros y análisis con el profesor.</p>
+        <a href={ajustes.equipoLichess} class="boton" rel="noopener">Equipo online de Dama Gaztea</a>
       </div>
-      <p class="creditos__nota">
-        Además de los problemas de nuestras clases, usamos problemas de la{' '}
-        <a href="https://database.lichess.org/#puzzles" rel="noopener">base abierta de Lichess</a>, publicada con licencia CC0.
-      </p>
     </div>
   </section>
 </Base>
@@ -138,9 +134,7 @@ const recientes = archivo.slice(1, 6);
       gap: 80px;
     }
     .creditos {
-      grid-template-columns: 2fr 1fr;
-      gap: 80px;
-      align-items: end;
+      max-width: 760px;
     }
   }
   .niveles,
@@ -226,10 +220,5 @@ const recientes = archivo.slice(1, 6);
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--color-gold-texto);
-  }
-  .creditos__nota {
-    margin: 0;
-    font-size: 14px;
-    color: var(--color-text-soft);
   }
 </style>
